@@ -1,7 +1,10 @@
 
 📰 Formal Article – Hệ thống quản lý bài viết
-🚀 Giới thiệu
-
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.0-6DB33F?style=for-the-badge&logo=springboot)]()
+[![Google API](https://img.shields.io/badge/Google%20API-Enabled-4285F4?style=for-the-badge&logo=google)]()
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)]()
+[![Swagger](https://img.shields.io/badge/Swagger-UI-85EA2D?style=for-the-badge&logo=swagger)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)]()
 Formal Article là hệ thống quản lý bài viết dành cho các tổ chức, tòa soạn hoặc cá nhân muốn quản lý nội dung trực tuyến một cách hiệu quả – bảo mật – dễ mở rộng.
 
 Ứng dụng được xây dựng với kiến trúc RESTful API trên nền Spring Boot, hỗ trợ Swagger UI để tài liệu hoá và thử nghiệm API nhanh chóng.
@@ -51,7 +54,7 @@ IDE đề xuất	IntelliJ IDEA / VS Code / Eclipse
  ┗ 📜 .gitignore
 
 🧠 Kiến trúc tổng quan
-Frontend (React / Angular / Vue)
+Frontend (React Next js )
           ⬇️
       RESTful API (Spring Boot)
           ⬇️
