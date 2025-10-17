@@ -44,4 +44,24 @@ Ngoài ra, hệ thống tích hợp **Google API** (Drive, Gmail, OAuth2, Transl
 ---
 
 ## ⚡ Cấu trúc dự án
+📦 formal-article
+┣ 📂 src
+┃ ┣ 📂 main
+┃ ┃ ┣ 📂 java/com/example/formalarticle
+┃ ┃ ┃ ┣ 📂 controller # REST API controllers
+┃ ┃ ┃ ┣ 📂 model # Entity & DTO
+┃ ┃ ┃ ┣ 📂 repository # JPA Repository interface
+┃ ┃ ┃ ┣ 📂 service # Business logic
+┃ ┃ ┃ ┗ 📂 config # Cấu hình bảo mật, Swagger, Google API, v.v.
+┃ ┃ ┗ 📂 resources
+┃ ┃ ┣ 📜 application.yml # Cấu hình DB, API keys, port,...
+┃ ┃ ┗ 📜 static / templates
+┣ 📜 pom.xml # Maven dependencies
+┣ 📜 README.md # Tài liệu dự án
+┗ 📜 .gitignore
+---
+Run dự án 
+mvn clean install
+mvn spring-boot:run
+
 
