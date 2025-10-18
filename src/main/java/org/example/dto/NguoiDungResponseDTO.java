@@ -1,0 +1,60 @@
+package org.example.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Response DTO for user information")
+public class NguoiDungResponseDTO {
+
+    @Schema(description = "User ID", example = "1")
+    private Long id;
+
+    @Schema(description = "Username", example = "johndoe123")
+    private String tenDangNhap;
+
+    @Schema(description = "Email address", example = "john.doe@example.com")
+    private String email;
+
+    @Schema(description = "Full name", example = "John Doe")
+    private String hoTen;
+
+    @Schema(description = "Profile picture file ID", example = "1")
+    private Long anhDaiDienId;
+
+    @Schema(description = "Gender", example = "Nam")
+    private String gioiTinh;
+
+    @Schema(description = "Date of birth", example = "1990-01-15T00:00:00")
+    private LocalDateTime ngaySinh;
+
+    @Schema(description = "Address", example = "123 Main St, City")
+    private String diaChi;
+
+    @Schema(description = "Phone number", example = "+84123456789")
+    private String soDienThoai;
+
+    @Schema(description = "User status", example = "active")
+    private String trangThai;
+
+    @Schema(description = "Additional information", example = "Additional user details")
+    private String thongTinBoSung;
+
+    @Schema(description = "Role ID", example = "1")
+    private Long vaiTroId;
+
+    @Schema(description = "Role name", example = "USER")
+    private String vaiTroTen;
+
+    @Schema(description = "Creation timestamp", example = "2024-01-15T10:30:00")
+    private LocalDateTime ngayTao;
+
+    @Schema(description = "Last update timestamp", example = "2024-01-20T14:45:00")
+    private LocalDateTime ngayCapNhat;
+}
