@@ -6,7 +6,8 @@
 [![Swagger](https://img.shields.io/badge/Swagger-UI-85EA2D?style=for-the-badge&logo=swagger)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)]()
 
----
+--- 
+Diagram: https://dbdiagram.io/d/article-68464fa35a9a94714e77be67
 
 ## 🧾 Giới thiệu
 
@@ -68,3 +69,4 @@ mvn clean install
 
 # Khởi chạy ứng dụng
 mvn spring-boot:run
+mvn hibernate-tools:hbm2java
