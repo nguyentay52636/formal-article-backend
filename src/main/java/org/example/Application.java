@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootApplication
 @EnableWebMvc
 @ComponentScan(basePackages = "org.example")
-@EntityScan("org.example.models")
+@EntityScan("org.example.entity")
 @EnableJpaRepositories("org.example.repositories")
 public class Application {
     public static void main(String[] args) {

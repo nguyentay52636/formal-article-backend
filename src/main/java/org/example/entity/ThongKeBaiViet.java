@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"baiViet"})
+@ToString(exclude = {"baiViet"})
 public class ThongKeBaiViet {
     
     @Id
@@ -21,20 +25,24 @@ public class ThongKeBaiViet {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "bai_viet_id", nullable = false)
-    private Long baiVietId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bai_viet_id", nullable = false, unique = true)
+    private BaiViet baiViet;
     
-    @Column(name = "so_luot_xem")
-    private Long soLuotXem = 0L;
+    @Column(name = "luot_xem", nullable = false)
+    private Long luotXem = 0L;
     
-    @Column(name = "so_luot_thich")
-    private Long soLuotThich = 0L;
+    @Column(name = "luot_tai", nullable = false)
+    private Long luotTai = 0L;
     
-    @Column(name = "so_luot_chia_se")
-    private Long soLuotChiaSe = 0L;
+    @Column(name = "so_binh_luan", nullable = false)
+    private Long soBinhLuan = 0L;
     
-    @Column(name = "so_luong_binh_luan")
-    private Long soLuongBinhLuan = 0L;
+    @Column(name = "lan_xem_cuoi")
+    private LocalDateTime lanXemCuoi;
+    
+    @Column(name = "lan_tai_cuoi")
+    private LocalDateTime lanTaiCuoi;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
     private String thongTinBoSung;

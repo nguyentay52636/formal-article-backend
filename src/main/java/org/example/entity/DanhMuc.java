@@ -4,16 +4,22 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "danh_muc")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"baiViets"})
+@ToString(exclude = {"baiViets"})
 public class DanhMuc {
     
     @Id
@@ -30,8 +36,9 @@ public class DanhMuc {
     @Column(name = "duong_dan", length = 200)
     private String duongDan;
     
-    @Column(name = "anh_dai_dien_id")
-    private Long anhDaiDienId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "anh_dai_dien_id")
+    private TepTin anhDaiDien;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
     private String thongTinBoSung;
@@ -43,4 +50,8 @@ public class DanhMuc {
     @UpdateTimestamp
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
+    
+    // Relationships
+    @OneToMany(mappedBy = "danhMuc", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BaiViet> baiViets = new ArrayList<>();
 }

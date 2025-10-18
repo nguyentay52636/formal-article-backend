@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"nguoiDung", "baiViet", "tepTin"})
+@ToString(exclude = {"nguoiDung", "baiViet", "tepTin"})
 public class TaiLieuDaLuu {
     
     @Id
@@ -21,11 +25,20 @@ public class TaiLieuDaLuu {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "nguoi_dung_id", nullable = false)
-    private Long nguoiDungId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nguoi_dung_id", nullable = false)
+    private NguoiDung nguoiDung;
     
-    @Column(name = "bai_viet_id", nullable = false)
-    private Long baiVietId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bai_viet_id", nullable = false)
+    private BaiViet baiViet;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tep_tin_id")
+    private TepTin tepTin;
+    
+    @Column(name = "ngay_luu", nullable = false)
+    private LocalDateTime ngayLuu;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
     private String thongTinBoSung;

@@ -4,16 +4,22 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "the")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"baiViets"})
+@ToString(exclude = {"baiViets"})
 public class The {
     
     @Id
@@ -21,7 +27,10 @@ public class The {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "ten", nullable = false, length = 100)
+    @Column(name = "duong_dan", nullable = false, length = 160)
+    private String duongDan;
+    
+    @Column(name = "ten", nullable = false, length = 160)
     private String ten;
     
     @Column(name = "mo_ta", length = 500)
@@ -43,4 +52,8 @@ public class The {
     @UpdateTimestamp
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
+    
+    // Relationships
+    @ManyToMany(mappedBy = "thes")
+    private Set<BaiViet> baiViets = new HashSet<>();
 }

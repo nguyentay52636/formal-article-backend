@@ -4,16 +4,24 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "bai_viet")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "thongKe", "taiLieuDaLuus"})
+@ToString(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "thongKe", "taiLieuDaLuus"})
 public class BaiViet {
     
     @Id
@@ -21,13 +29,15 @@ public class BaiViet {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "danh_muc_id", nullable = false)
-    private Long danhMucId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "danh_muc_id", nullable = false)
+    private DanhMuc danhMuc;
     
-    @Column(name = "tac_gia_id", nullable = false)
-    private Long tacGiaId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tac_gia_id", nullable = false)
+    private NguoiDung tacGia;
     
-    @Column(name = "duong_dan", nullable = false, length = 180)
+    @Column(name = "duong_dan", nullable = false, length = 180, unique = true)
     private String duongDan;
     
     @Column(name = "tieu_de", nullable = false, length = 220)
@@ -46,8 +56,9 @@ public class BaiViet {
     @Column(name = "ngay_xuat_ban")
     private LocalDateTime ngayXuatBan;
     
-    @Column(name = "anh_dai_dien_id")
-    private Long anhDaiDienId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "anh_dai_dien_id")
+    private TepTin anhDaiDien;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
     private String thongTinBoSung;
@@ -59,6 +70,30 @@ public class BaiViet {
     @UpdateTimestamp
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
+    
+    // Relationships
+    @OneToMany(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BinhLuan> binhLuans = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PhanUng> phanUngs = new ArrayList<>();
+    
+    @ManyToMany
+    @JoinTable(
+        name = "bai_viet_the",
+        joinColumns = @JoinColumn(name = "bai_viet_id"),
+        inverseJoinColumns = @JoinColumn(name = "the_id")
+    )
+    private Set<The> thes = new HashSet<>();
+    
+    @OneToMany(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BaiVietTepTin> tepTins = new ArrayList<>();
+    
+    @OneToOne(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ThongKeBaiViet thongKe;
+    
+    @OneToMany(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TaiLieuDaLuu> taiLieuDaLuus = new ArrayList<>();
     
     public enum TrangThai {
         NHAP, XUAT_BAN, LUU_TRU

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"baiViet", "nguoiDung"})
+@ToString(exclude = {"baiViet", "nguoiDung"})
 public class PhanUng {
     
     @Id
@@ -21,14 +25,16 @@ public class PhanUng {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "bai_viet_id", nullable = false)
-    private Long baiVietId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bai_viet_id", nullable = false)
+    private BaiViet baiViet;
     
-    @Column(name = "nguoi_dung_id", nullable = false)
-    private Long nguoiDungId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nguoi_dung_id", nullable = false)
+    private NguoiDung nguoiDung;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "loai_phan_ung", nullable = false)
+    @Column(name = "loai", nullable = false)
     private LoaiPhanUng loaiPhanUng;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
@@ -43,6 +49,6 @@ public class PhanUng {
     private LocalDateTime ngayCapNhat;
     
     public enum LoaiPhanUng {
-        THICH, KHONG_THICH, YEU_THICH, CHIA_SE
+        THICH, SAO, HUU_ICH
     }
 }

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +16,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"baiViet", "tepTin"})
+@ToString(exclude = {"baiViet", "tepTin"})
 public class BaiVietTepTin {
     
     @Id
@@ -21,11 +25,20 @@ public class BaiVietTepTin {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "bai_viet_id", nullable = false)
-    private Long baiVietId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bai_viet_id", nullable = false)
+    private BaiViet baiViet;
     
-    @Column(name = "tep_tin_id", nullable = false)
-    private Long tepTinId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tep_tin_id", nullable = false)
+    private TepTin tepTin;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "loai_lien_ket", nullable = false)
+    private LoaiLienKet loaiLienKet;
+    
+    @Column(name = "thu_tu", nullable = false)
+    private Integer thuTu = 0;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
     private String thongTinBoSung;
@@ -37,4 +50,8 @@ public class BaiVietTepTin {
     @UpdateTimestamp
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
+    
+    public enum LoaiLienKet {
+        ANH_DAI_DIEN, TEP_DINH_KEM
+    }
 }

@@ -4,22 +4,31 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "vai_tro")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"nguoiDungs"})
+@ToString(exclude = {"nguoiDungs"})
 public class VaiTro {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    
+    @Column(name = "ma", nullable = false, length = 50, unique = true)
+    private String ma;
     
     @Column(name = "ten", nullable = false, length = 100)
     private String ten;
@@ -43,4 +52,8 @@ public class VaiTro {
     @UpdateTimestamp
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
+    
+    // Relationships
+    @OneToMany(mappedBy = "vaiTro", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<NguoiDung> nguoiDungs = new ArrayList<>();
 }

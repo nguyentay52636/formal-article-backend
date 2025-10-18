@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,18 +16,20 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"baiViet", "the"})
+@ToString(exclude = {"baiViet", "the"})
+@IdClass(BaiVietTheId.class)
 public class BaiVietThe {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bai_viet_id", nullable = false)
+    private BaiViet baiViet;
     
-    @Column(name = "bai_viet_id", nullable = false)
-    private Long baiVietId;
-    
-    @Column(name = "the_id", nullable = false)
-    private Long theId;
+    @Id
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "the_id", nullable = false)
+    private The the;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
     private String thongTinBoSung;
@@ -37,4 +41,13 @@ public class BaiVietThe {
     @UpdateTimestamp
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
+}
+
+// Composite Key Class
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class BaiVietTheId implements java.io.Serializable {
+    private Long baiViet;
+    private Long the;
 }

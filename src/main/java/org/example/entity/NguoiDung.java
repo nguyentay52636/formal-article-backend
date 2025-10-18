@@ -4,16 +4,22 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "nguoi_dung")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"vaiTro", "baiViets", "binhLuans", "phanUngs", "tepTins", "taiLieuDaLuus"})
+@ToString(exclude = {"vaiTro", "baiViets", "binhLuans", "phanUngs", "tepTins", "taiLieuDaLuus"})
 public class NguoiDung {
     
     @Id
@@ -33,8 +39,9 @@ public class NguoiDung {
     @Column(name = "ho_ten", nullable = false, length = 100)
     private String hoTen;
     
-    @Column(name = "anh_dai_dien_id")
-    private Long anhDaiDienId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "anh_dai_dien_id")
+    private TepTin anhDaiDien;
     
     @Column(name = "gioi_tinh")
     private String gioiTinh;
@@ -61,4 +68,24 @@ public class NguoiDung {
     @UpdateTimestamp
     @Column(name = "ngay_cap_nhat")
     private LocalDateTime ngayCapNhat;
+    
+    // Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vai_tro_id")
+    private VaiTro vaiTro;
+    
+    @OneToMany(mappedBy = "tacGia", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BaiViet> baiViets = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "nguoiDung", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BinhLuan> binhLuans = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "nguoiDung", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PhanUng> phanUngs = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "nguoiTao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TepTin> tepTins = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "nguoiDung", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TaiLieuDaLuu> taiLieuDaLuus = new ArrayList<>();
 }
