@@ -8,9 +8,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.example.dto.NguoiDungRequestDTO;
-import org.example.dto.NguoiDungResponseDTO;
-import org.example.dto.NguoiDungUpdateDTO;
+import org.example.dto.NguoiDungDto.NguoiDungRequestDTO;
+import org.example.dto.NguoiDungDto.NguoiDungResponseDTO;
+import org.example.dto.NguoiDungDto.NguoiDungUpdateDTO;
 import org.example.service.NguoiDungService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-@Tag(name = "User Management", description = "APIs for managing users (NguoiDung)")
+@Tag(name = "User API", description = "APIs for managing users (NguoiDung)")
 @CrossOrigin(origins = "*")
 public class NguoiDungController {
 
@@ -44,13 +44,15 @@ public class NguoiDungController {
             @ApiResponse(responseCode = "409", description = "Username or email already exists")
     })
     @PostMapping
-    public ResponseEntity<NguoiDungResponseDTO> createNguoiDung(
+    public ResponseEntity<?> createNguoiDung(
             @Valid @RequestBody NguoiDungRequestDTO requestDTO) {
         try {
             NguoiDungResponseDTO responseDTO = nguoiDungService.createNguoiDung(requestDTO);
             return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.CONFLICT);
         }
     }
 
@@ -84,14 +86,16 @@ public class NguoiDungController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<NguoiDungResponseDTO> getNguoiDungById(
+    public ResponseEntity<?> getNguoiDungById(
             @Parameter(description = "User ID", example = "1")
             @PathVariable Long id) {
         try {
             NguoiDungResponseDTO responseDTO = nguoiDungService.getNguoiDungById(id);
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -108,14 +112,16 @@ public class NguoiDungController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/username/{tenDangNhap}")
-    public ResponseEntity<NguoiDungResponseDTO> getNguoiDungByUsername(
+    public ResponseEntity<?> getNguoiDungByUsername(
             @Parameter(description = "Username", example = "johndoe123")
             @PathVariable String tenDangNhap) {
         try {
             NguoiDungResponseDTO responseDTO = nguoiDungService.getNguoiDungByUsername(tenDangNhap);
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -132,14 +138,16 @@ public class NguoiDungController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/email/{email}")
-    public ResponseEntity<NguoiDungResponseDTO> getNguoiDungByEmail(
+    public ResponseEntity<?> getNguoiDungByEmail(
             @Parameter(description = "Email address", example = "john.doe@example.com")
             @PathVariable String email) {
         try {
             NguoiDungResponseDTO responseDTO = nguoiDungService.getNguoiDungByEmail(email);
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -196,7 +204,7 @@ public class NguoiDungController {
             @ApiResponse(responseCode = "409", description = "Email already exists")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<NguoiDungResponseDTO> updateNguoiDung(
+    public ResponseEntity<?> updateNguoiDung(
             @Parameter(description = "User ID", example = "1")
             @PathVariable Long id,
             @Valid @RequestBody NguoiDungUpdateDTO updateDTO) {
@@ -204,12 +212,14 @@ public class NguoiDungController {
             NguoiDungResponseDTO responseDTO = nguoiDungService.updateNguoiDung(id, updateDTO);
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
             if (e.getMessage().contains("not found")) {
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
             } else if (e.getMessage().contains("already exists")) {
-                return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+                return new ResponseEntity<>(error, HttpStatus.CONFLICT);
             }
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
     }
 

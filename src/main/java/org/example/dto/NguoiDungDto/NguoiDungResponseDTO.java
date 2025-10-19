@@ -1,5 +1,6 @@
-package org.example.dto;
+package org.example.dto.NguoiDungDto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,6 +32,7 @@ public class NguoiDungResponseDTO {
     @Schema(description = "Gender", example = "Nam")
     private String gioiTinh;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Schema(description = "Date of birth", example = "1990-01-15T00:00:00")
     private LocalDateTime ngaySinh;
 
@@ -52,9 +54,11 @@ public class NguoiDungResponseDTO {
     @Schema(description = "Role name", example = "USER")
     private String vaiTroTen;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Schema(description = "Creation timestamp", example = "2024-01-15T10:30:00")
     private LocalDateTime ngayTao;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Schema(description = "Last update timestamp", example = "2024-01-20T14:45:00")
     private LocalDateTime ngayCapNhat;
 }

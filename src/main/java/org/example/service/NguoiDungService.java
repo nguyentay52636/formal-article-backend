@@ -1,8 +1,8 @@
 package org.example.service;
 
-import org.example.dto.NguoiDungRequestDTO;
-import org.example.dto.NguoiDungResponseDTO;
-import org.example.dto.NguoiDungUpdateDTO;
+import org.example.dto.NguoiDungDto.NguoiDungRequestDTO;
+import org.example.dto.NguoiDungDto.NguoiDungResponseDTO;
+import org.example.dto.NguoiDungDto.NguoiDungUpdateDTO;
 import org.example.entity.NguoiDung;
 import org.example.entity.TepTin;
 import org.example.entity.VaiTro;
