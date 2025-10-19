@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.dto.VaiTroDto.VaiTroResponseDTO;
 
 import java.time.LocalDateTime;
 
@@ -48,11 +49,8 @@ public class NguoiDungResponseDTO {
     @Schema(description = "Additional information", example = "Additional user details")
     private String thongTinBoSung;
 
-    @Schema(description = "Role ID", example = "1")
-    private Long vaiTroId;
-
-    @Schema(description = "Role name", example = "USER")
-    private String vaiTroTen;
+    @Schema(description = "User role information")
+    private VaiTroResponseDTO vaiTro;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Schema(description = "Creation timestamp", example = "2024-01-15T10:30:00")

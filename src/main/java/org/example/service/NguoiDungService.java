@@ -6,6 +6,7 @@ import org.example.dto.NguoiDungDto.NguoiDungUpdateDTO;
 import org.example.entity.NguoiDung;
 import org.example.entity.TepTin;
 import org.example.entity.VaiTro;
+import org.example.mapping.NguoiDungMapper;
 import org.example.repository.NguoiDungRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,9 @@ public class NguoiDungService {
 
     @Autowired
     private NguoiDungRepository nguoiDungRepository;
+
+    @Autowired
+    private NguoiDungMapper nguoiDungMapper;
 
     @Autowired(required = false)
     private PasswordEncoder passwordEncoder;
@@ -70,52 +74,52 @@ public class NguoiDungService {
         }
 
         NguoiDung savedNguoiDung = nguoiDungRepository.save(nguoiDung);
-        return convertToResponseDTO(savedNguoiDung);
+        return nguoiDungMapper.toResponseDTO(savedNguoiDung);
     }
 
-    // Read All
+    // Read All - Sử dụng mapper
     public List<NguoiDungResponseDTO> getAllNguoiDung() {
         return nguoiDungRepository.findAll().stream()
-                .map(this::convertToResponseDTO)
+                .map(nguoiDungMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    // Read by ID
+    // Read by ID - Sử dụng mapper
     public NguoiDungResponseDTO getNguoiDungById(Long id) {
         NguoiDung nguoiDung = nguoiDungRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        return convertToResponseDTO(nguoiDung);
+        return nguoiDungMapper.toResponseDTO(nguoiDung);
     }
 
-    // Read by Username
+    // Read by Username - Sử dụng mapper
     public NguoiDungResponseDTO getNguoiDungByUsername(String tenDangNhap) {
         NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhap(tenDangNhap)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + tenDangNhap));
-        return convertToResponseDTO(nguoiDung);
+        return nguoiDungMapper.toResponseDTO(nguoiDung);
     }
 
-    // Read by Email
+    // Read by Email - Sử dụng mapper
     public NguoiDungResponseDTO getNguoiDungByEmail(String email) {
         NguoiDung nguoiDung = nguoiDungRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
-        return convertToResponseDTO(nguoiDung);
+        return nguoiDungMapper.toResponseDTO(nguoiDung);
     }
 
-    // Search by keyword
+    // Search by keyword - Sử dụng mapper
     public List<NguoiDungResponseDTO> searchNguoiDung(String keyword) {
         return nguoiDungRepository.searchByKeyword(keyword).stream()
-                .map(this::convertToResponseDTO)
+                .map(nguoiDungMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    // Get by status
+    // Get by status - Sử dụng mapper
     public List<NguoiDungResponseDTO> getNguoiDungByStatus(String trangThai) {
         return nguoiDungRepository.findByTrangThai(trangThai).stream()
-                .map(this::convertToResponseDTO)
+                .map(nguoiDungMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    // Update
+    // Update - Sử dụng mapper
     public NguoiDungResponseDTO updateNguoiDung(Long id, NguoiDungUpdateDTO updateDTO) {
         NguoiDung nguoiDung = nguoiDungRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
@@ -174,7 +178,7 @@ public class NguoiDungService {
         }
 
         NguoiDung updatedNguoiDung = nguoiDungRepository.save(nguoiDung);
-        return convertToResponseDTO(updatedNguoiDung);
+        return nguoiDungMapper.toResponseDTO(updatedNguoiDung);
     }
 
     // Delete
@@ -183,33 +187,5 @@ public class NguoiDungService {
             throw new RuntimeException("User not found with id: " + id);
         }
         nguoiDungRepository.deleteById(id);
-    }
-
-    // Convert Entity to DTO
-    private NguoiDungResponseDTO convertToResponseDTO(NguoiDung nguoiDung) {
-        NguoiDungResponseDTO responseDTO = new NguoiDungResponseDTO();
-        responseDTO.setId(nguoiDung.getId());
-        responseDTO.setTenDangNhap(nguoiDung.getTenDangNhap());
-        responseDTO.setEmail(nguoiDung.getEmail());
-        responseDTO.setHoTen(nguoiDung.getHoTen());
-        responseDTO.setGioiTinh(nguoiDung.getGioiTinh());
-        responseDTO.setNgaySinh(nguoiDung.getNgaySinh());
-        responseDTO.setDiaChi(nguoiDung.getDiaChi());
-        responseDTO.setSoDienThoai(nguoiDung.getSoDienThoai());
-        responseDTO.setTrangThai(nguoiDung.getTrangThai());
-        responseDTO.setThongTinBoSung(nguoiDung.getThongTinBoSung());
-        responseDTO.setNgayTao(nguoiDung.getNgayTao());
-        responseDTO.setNgayCapNhat(nguoiDung.getNgayCapNhat());
-
-        if (nguoiDung.getAnhDaiDien() != null) {
-            responseDTO.setAnhDaiDienId(nguoiDung.getAnhDaiDien().getId());
-        }
-
-        if (nguoiDung.getVaiTro() != null) {
-            responseDTO.setVaiTroId(nguoiDung.getVaiTro().getId());
-            responseDTO.setVaiTroTen(nguoiDung.getVaiTro().getTen());
-        }
-
-        return responseDTO;
     }
 }
