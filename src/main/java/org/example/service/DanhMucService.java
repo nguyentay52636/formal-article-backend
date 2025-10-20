@@ -77,14 +77,14 @@ public class DanhMucService {
     }
 
     // Read by danh muc cha - Sử dụng mapper
-    public List<DanhMucResponseDto> getDanhMucByDanhMucCha(String danhMucCha) {
+    public List<DanhMucResponseDto> getDanhMucByDanhMucCha(Long danhMucCha) {
         return danhMucRepository.findByDanhMucCha(danhMucCha).stream()
                 .map(danhMucMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     // Read by danh muc cha and active status - Sử dụng mapper
-    public List<DanhMucResponseDto> getDanhMucByDanhMucChaAndKichHoat(String danhMucCha, Boolean kichHoat) {
+    public List<DanhMucResponseDto> getDanhMucByDanhMucChaAndKichHoat(Long danhMucCha, Boolean kichHoat) {
         return danhMucRepository.findByDanhMucChaAndKichHoatOrderByThuTu(danhMucCha, kichHoat).stream()
                 .map(danhMucMapper::toResponseDTO)
                 .collect(Collectors.toList());

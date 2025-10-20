@@ -27,8 +27,8 @@ public class DanhMuc {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "danh_muc_cha", nullable = false, length = 100)
-    private String danhMucCha;
+    @Column(name = "danh_muc_cha")
+    private Long danhMucCha;
 
     @Column(name = "duong_dan", length = 200)
     private String duongDan;

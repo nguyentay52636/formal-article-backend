@@ -181,8 +181,8 @@ public class DanhMucController {
     })
     @GetMapping("/parent/{danhMucCha}")
     public ResponseEntity<List<DanhMucResponseDto>> getDanhMucByDanhMucCha(
-            @Parameter(description = "Danh mục cha", example = "Tin tức")
-            @PathVariable String danhMucCha) {
+            @Parameter(description = "ID danh mục cha", example = "1")
+            @PathVariable Long danhMucCha) {
         List<DanhMucResponseDto> danhMucs = danhMucService.getDanhMucByDanhMucCha(danhMucCha);
         return new ResponseEntity<>(danhMucs, HttpStatus.OK);
     }
@@ -200,8 +200,8 @@ public class DanhMucController {
     })
     @GetMapping("/parent/{danhMucCha}/status/{kichHoat}")
     public ResponseEntity<List<DanhMucResponseDto>> getDanhMucByDanhMucChaAndKichHoat(
-            @Parameter(description = "Danh mục cha", example = "Tin tức")
-            @PathVariable String danhMucCha,
+            @Parameter(description = "ID danh mục cha", example = "1")
+            @PathVariable Long danhMucCha,
             @Parameter(description = "Trạng thái kích hoạt", example = "true")
             @PathVariable Boolean kichHoat) {
         List<DanhMucResponseDto> danhMucs = danhMucService.getDanhMucByDanhMucChaAndKichHoat(danhMucCha, kichHoat);

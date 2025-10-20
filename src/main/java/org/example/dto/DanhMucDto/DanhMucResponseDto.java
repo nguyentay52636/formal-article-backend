@@ -17,8 +17,8 @@ public class DanhMucResponseDto {
     @Schema(description = "ID danh mục", example = "1")
     private Long id;
     
-    @Schema(description = "Danh mục cha", example = "Tin tức")
-    private String danhMucCha;
+    @Schema(description = "ID danh mục cha", example = "1")
+    private Long danhMucCha;
     
     @Schema(description = "Tên danh mục", example = "Tin tức công nghệ")
     private String ten;

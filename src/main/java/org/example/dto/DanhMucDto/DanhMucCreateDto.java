@@ -14,10 +14,8 @@ import lombok.NoArgsConstructor;
 @Schema(description = "DanhMuc Create DTO")
 public class DanhMucCreateDto {
     
-    @Schema(description = "Danh mục cha", example = "Tin tức", maxLength = 100)
-    @NotBlank(message = "Danh mục cha không được để trống")
-    @Size(max = 100, message = "Danh mục cha không được vượt quá 100 ký tự")
-    private String danhMucCha;
+    @Schema(description = "ID danh mục cha", example = "1")
+    private Long danhMucCha;
     
     @Schema(description = "Tên danh mục", example = "Tin tức công nghệ", maxLength = 100)
     @NotBlank(message = "Tên danh mục không được để trống")
