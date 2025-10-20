@@ -11,7 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.AuthDto.AuthRequest;
 import org.example.dto.AuthDto.AuthResponse;
+import org.example.dto.AuthDto.ForgotPasswordRequest;
+import org.example.dto.AuthDto.ForgotPasswordResponse;
 import org.example.dto.AuthDto.RegisterRequest;
+import org.example.dto.AuthDto.ResetPasswordRequest;
+import org.example.dto.AuthDto.ResetPasswordResponse;
 import org.example.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -100,17 +104,69 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/me")
-    @Operation(summary = "Get current user", description = "Get currently authenticated user information")
-    public ResponseEntity<?> getCurrentUser() {
+    @PostMapping("/forgot-password")
+    @Operation(
+            summary = "Quên mật khẩu", 
+            description = "Gửi email đặt lại mật khẩu cho người dùng"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Email đặt lại mật khẩu đã được gửi thành công",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ForgotPasswordResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400", 
+                    description = "Email không tồn tại hoặc không thể gửi email"
+            )
+    })
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         try {
-            // This endpoint is protected and requires authentication
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "This endpoint requires authentication");
+            log.info("Forgot password request received for email: {}", request.getEmail());
+            ForgotPasswordResponse response = authService.forgotPassword(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Failed to get current user", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            log.error("Forgot password failed for email: {}", request.getEmail(), e);
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Không thể xử lý yêu cầu đặt lại mật khẩu");
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(
+            summary = "Đặt lại mật khẩu", 
+            description = "Đặt lại mật khẩu bằng mã xác thực từ email"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Đặt lại mật khẩu thành công",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResetPasswordResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400", 
+                    description = "Mã xác thực không hợp lệ hoặc đã hết hạn"
+            )
+    })
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            log.info("Reset password request received for email: {}", request.getEmail());
+            ResetPasswordResponse response = authService.resetPassword(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Reset password failed for email: {}", request.getEmail(), e);
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Không thể đặt lại mật khẩu");
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 }
