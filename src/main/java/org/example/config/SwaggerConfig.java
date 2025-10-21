@@ -30,7 +30,7 @@ public class SwaggerConfig {
         Info info = new Info()
                 .title("Article Backend API")
                 .version("1.0.0")
-                .description("RESTful API for Article Management System with User CRUD operations")
+                .description("RESTful API for Article Management System with comprehensive CRUD operations for Users, Categories, Roles, and Articles")
                 .contact(contact)
                 .license(license);
 

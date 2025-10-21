@@ -1,5 +1,7 @@
 package org.example.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,9 +35,8 @@ public class TepTin {
     @Column(name = "duong_dan", nullable = false, length = 500)
     private String duongDan;
     
-    @Enumerated(EnumType.STRING)
     @Column(name = "loai", nullable = false)
-    private LoaiTep loaiTep;
+    private String loaiTep;
     
     @Column(name = "dinh_dang", nullable = false, length = 100)
     private String dinhDang;
@@ -81,6 +82,6 @@ public class TepTin {
     private List<BaiViet> anhDaiDiens = new ArrayList<>();
     
     public enum LoaiTep {
-        ANH, TAI_LIEU, KHAC
+        anh, tai_lieu, khac
     }
 }

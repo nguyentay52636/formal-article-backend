@@ -7,10 +7,10 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 @Configuration
-public class MailConfig {
+public class EmailConfig {
 
-    @Bean
-    public TemplateEngine templateEngine() {
+    @Bean("emailTemplateEngine")
+    public TemplateEngine emailTemplateEngine() {
         ClassLoaderTemplateResolver resolver = new ClassLoaderTemplateResolver();
         resolver.setPrefix("templates/");
         resolver.setSuffix(".html");

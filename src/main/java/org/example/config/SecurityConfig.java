@@ -76,7 +76,11 @@ public class SecurityConfig {
             .exceptionHandling(exception -> {})
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // Allow everything
+                // Swagger endpoints
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/webjars/**").permitAll()
+                // API endpoints
+                .requestMatchers("/api/**").permitAll()
+                // Allow everything else
                 .anyRequest().permitAll()
             )
             ;

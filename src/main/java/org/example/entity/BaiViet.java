@@ -20,8 +20,8 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "thongKe", "taiLieuDaLuus"})
-@ToString(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "thongKe", "taiLieuDaLuus"})
+@EqualsAndHashCode(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "taiLieuDaLuus"})
+@ToString(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "taiLieuDaLuus"})
 public class BaiViet {
     
     @Id
@@ -49,7 +49,7 @@ public class BaiViet {
     @Column(name = "noi_dung_html", columnDefinition = "LONGTEXT")
     private String noiDungHtml;
     
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "trang_thai")
     private TrangThai trangThai = TrangThai.NHAP;
     
@@ -89,8 +89,8 @@ public class BaiViet {
     @OneToMany(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<BaiVietTepTin> tepTins = new ArrayList<>();
     
-    @OneToOne(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private ThongKeBaiViet thongKe;
+    // @OneToOne(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // private ThongKeBaiViet thongKe;
     
     @OneToMany(mappedBy = "baiViet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TaiLieuDaLuu> taiLieuDaLuus = new ArrayList<>();
