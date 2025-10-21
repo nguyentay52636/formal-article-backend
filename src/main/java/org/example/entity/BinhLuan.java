@@ -26,17 +26,21 @@ public class BinhLuan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-    
+        @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nguoi_dung_id", nullable = false)
+    private NguoiDung nguoiDung;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bai_viet_id", nullable = false)
     private BaiViet baiViet;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "nguoi_dung_id", nullable = false)
-    private NguoiDung nguoiDung;
-    
     @Column(name = "noi_dung", nullable = false, columnDefinition = "TEXT")
     private String noiDung;
+    
+    @Column(name = "ten_khach", length = 100)
+    private String tenKhach;
+    
+    @Column(name = "email_khach", length = 100)
+    private String emailKhach;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "binh_luan_cha_id")
