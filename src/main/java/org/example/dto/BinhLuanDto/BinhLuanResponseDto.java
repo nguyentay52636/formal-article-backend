@@ -29,11 +29,6 @@ public class BinhLuanResponseDto {
     @Schema(description = "Comment content", example = "This is a great article!")
     private String noiDung;
 
-    @Schema(description = "Guest name", example = "John Doe")
-    private String tenKhach;
-
-    @Schema(description = "Guest email", example = "john.doe@example.com")
-    private String emailKhach;
 
     @Schema(description = "Parent comment ID", example = "1")
     private Long binhLuanChaId;

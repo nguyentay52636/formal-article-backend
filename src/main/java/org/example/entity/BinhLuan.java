@@ -36,11 +36,6 @@ public class BinhLuan {
     @Column(name = "noi_dung", nullable = false, columnDefinition = "TEXT")
     private String noiDung;
     
-    @Column(name = "ten_khach", length = 100)
-    private String tenKhach;
-    
-    @Column(name = "email_khach", length = 100)
-    private String emailKhach;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "binh_luan_cha_id")

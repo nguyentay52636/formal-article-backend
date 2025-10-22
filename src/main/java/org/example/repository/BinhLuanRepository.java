@@ -36,9 +36,4 @@ public interface BinhLuanRepository extends JpaRepository<BinhLuan, Long> {
 
     @Query("SELECT b FROM BinhLuan b WHERE b.trangThai = :trangThai ORDER BY b.ngayTao DESC")
     List<BinhLuan> findRecentComments(@Param("trangThai") String trangThai);
-
-    List<BinhLuan> findByEmailKhach(String emailKhach);
-
-    @Query("SELECT b FROM BinhLuan b WHERE LOWER(b.tenKhach) LIKE LOWER(CONCAT('%', :tenKhach, '%')) AND b.trangThai = :trangThai")
-    List<BinhLuan> findByTenKhachContaining(@Param("tenKhach") String tenKhach, @Param("trangThai") String trangThai);
 }

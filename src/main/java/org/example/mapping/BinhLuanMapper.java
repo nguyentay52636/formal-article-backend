@@ -17,8 +17,6 @@ public class BinhLuanMapper {
         dto.setBaiVietId(entity.getBaiViet() != null ? entity.getBaiViet().getId() : null);
         dto.setNguoiDungId(entity.getNguoiDung() != null ? entity.getNguoiDung().getId() : null);
         dto.setNoiDung(entity.getNoiDung());
-        dto.setTenKhach(entity.getTenKhach());
-        dto.setEmailKhach(entity.getEmailKhach());
         dto.setBinhLuanChaId(entity.getBinhLuanCha() != null ? entity.getBinhLuanCha().getId() : null);
         dto.setTrangThai(entity.getTrangThai());
         dto.setThongTinBoSung(entity.getThongTinBoSung());
@@ -41,12 +39,6 @@ public class BinhLuanMapper {
 
         if (updateDto.getNoiDung() != null) {
             entity.setNoiDung(updateDto.getNoiDung());
-        }
-        if (updateDto.getTenKhach() != null) {
-            entity.setTenKhach(updateDto.getTenKhach());
-        }
-        if (updateDto.getEmailKhach() != null) {
-            entity.setEmailKhach(updateDto.getEmailKhach());
         }
         if (updateDto.getTrangThai() != null) {
             entity.setTrangThai(updateDto.getTrangThai());

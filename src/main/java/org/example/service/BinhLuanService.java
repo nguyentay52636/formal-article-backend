@@ -39,12 +39,9 @@ public class BinhLuanService {
         BaiViet baiViet = baiVietRepository.findById(createDto.getBaiVietId())
                 .orElseThrow(() -> new RuntimeException("Bài viết không tồn tại với ID: " + createDto.getBaiVietId()));
 
-        // Validate user if provided
-        NguoiDung nguoiDung = null;
-        if (createDto.getNguoiDungId() != null) {
-            nguoiDung = nguoiDungRepository.findById(createDto.getNguoiDungId())
-                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại với ID: " + createDto.getNguoiDungId()));
-        }
+        // Validate user is required
+        NguoiDung nguoiDung = nguoiDungRepository.findById(createDto.getNguoiDungId())
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại với ID: " + createDto.getNguoiDungId()));
 
         // Validate parent comment if provided
         BinhLuan binhLuanCha = null;
@@ -58,8 +55,6 @@ public class BinhLuanService {
         binhLuan.setBaiViet(baiViet);
         binhLuan.setNguoiDung(nguoiDung);
         binhLuan.setNoiDung(createDto.getNoiDung());
-        binhLuan.setTenKhach(createDto.getTenKhach());
-        binhLuan.setEmailKhach(createDto.getEmailKhach());
         binhLuan.setBinhLuanCha(binhLuanCha);
         binhLuan.setTrangThai(createDto.getTrangThai() != null ? createDto.getTrangThai() : "active");
         binhLuan.setThongTinBoSung(createDto.getThongTinBoSung());

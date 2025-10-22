@@ -32,7 +32,7 @@ public class BinhLuanController {
 
     @Operation(
             summary = "Create a new comment",
-            description = "Creates a new comment for an article. Can be from registered user or guest."
+            description = "Creates a new comment for an article. Requires a registered user."
     )
     @ApiResponses(value = {
             @ApiResponse(

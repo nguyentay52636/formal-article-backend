@@ -1,7 +1,6 @@
 package org.example.dto.BinhLuanDto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,14 +16,6 @@ public class BinhLuanUpdateDto {
     @Schema(description = "Comment content", example = "Updated comment content")
     private String noiDung;
 
-    @Size(max = 100, message = "Guest name must not exceed 100 characters")
-    @Schema(description = "Guest name", example = "John Doe")
-    private String tenKhach;
-
-    @Email(message = "Email should be valid")
-    @Size(max = 100, message = "Email must not exceed 100 characters")
-    @Schema(description = "Guest email", example = "john.doe@example.com")
-    private String emailKhach;
 
     @Schema(description = "Comment status", example = "active")
     private String trangThai;
