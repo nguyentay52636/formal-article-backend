@@ -1,0 +1,44 @@
+package org.example.dto.HoatDongDto;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class HoatDongResponseDto {
+    
+    private Long id;
+    
+    private Long nguoiThucHienId;
+    
+    private String doiTuong;
+    
+    private Long doiTuongId;
+    
+    private String hanhDong;
+    
+    private String truoc;
+    
+    private String sau;
+    
+    private LocalDateTime ngayTao;
+    
+    private String thongTinBoSung;
+    
+    // Thông tin người thực hiện
+    private UserInfoDto nguoiThucHien;
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserInfoDto {
+        private Long id;
+        private String tenDangNhap;
+        private String hoTen;
+        private Long anhDaiDienId;
+    }
+}

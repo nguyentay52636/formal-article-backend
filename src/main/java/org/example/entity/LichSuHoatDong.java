@@ -21,17 +21,23 @@ public class LichSuHoatDong {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "nguoi_dung_id", nullable = false)
-    private Long nguoiDungId;
+    @Column(name = "nguoi_thuc_hien_id", nullable = false)
+    private Long nguoiThucHienId;
     
-    @Column(name = "loai_hoat_dong", nullable = false, length = 50)
-    private String loaiHoatDong;
+    @Column(name = "doi_tuong", nullable = false, length = 100)
+    private String doiTuong;
     
-    @Column(name = "mo_ta", length = 500)
-    private String moTa;
+    @Column(name = "doi_tuong_id")
+    private Long doiTuongId;
     
-    @Column(name = "duong_dan", length = 500)
-    private String duongDan;
+    @Column(name = "hanh_dong", nullable = false, length = 100)
+    private String hanhDong;
+    
+    @Column(name = "truoc", columnDefinition = "LONGTEXT")
+    private String truoc;
+    
+    @Column(name = "sau", columnDefinition = "LONGTEXT")
+    private String sau;
     
     @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
     private String thongTinBoSung;
