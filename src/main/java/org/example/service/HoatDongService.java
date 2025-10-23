@@ -85,6 +85,13 @@ public class HoatDongService {
         return entities.map(hoatDongMapper::toResponseDto);
     }
     
+    // Lấy tất cả hoạt động (không phân trang)
+    @Transactional(readOnly = true)
+    public List<HoatDongResponseDto> getAllHoatDong() {
+        List<LichSuHoatDong> entities = hoatDongRepository.findAll();
+        return hoatDongMapper.toResponseDtoList(entities);
+    }
+    
     // Lấy hoạt động theo người thực hiện
     @Transactional(readOnly = true)
     public List<HoatDongResponseDto> getHoatDongByNguoiThucHien(Long nguoiThucHienId) {
@@ -176,6 +183,39 @@ public class HoatDongService {
     // Xóa tất cả hoạt động
     public void deleteAllHoatDong() {
         hoatDongRepository.deleteAll();
+    }
+    
+    // Xóa hoạt động theo người thực hiện
+    public void deleteHoatDongByNguoiThucHien(Long nguoiThucHienId) {
+        hoatDongRepository.deleteByNguoiThucHienId(nguoiThucHienId);
+    }
+    
+    // Lấy hoạt động theo hành động với phân trang
+    @Transactional(readOnly = true)
+    public Page<HoatDongResponseDto> getHoatDongByHanhDong(String hanhDong, Pageable pageable) {
+        Page<LichSuHoatDong> entities = hoatDongRepository.findByHanhDongOrderByNgayTaoDesc(hanhDong, pageable);
+        return entities.map(hoatDongMapper::toResponseDto);
+    }
+    
+    // Lấy hoạt động theo hành động (không phân trang)
+    @Transactional(readOnly = true)
+    public List<HoatDongResponseDto> getHoatDongByHanhDong(String hanhDong) {
+        List<LichSuHoatDong> entities = hoatDongRepository.findByHanhDongOrderByNgayTaoDesc(hanhDong);
+        return hoatDongMapper.toResponseDtoList(entities);
+    }
+    
+    // Lấy hoạt động theo người thực hiện và hành động với phân trang
+    @Transactional(readOnly = true)
+    public Page<HoatDongResponseDto> getHoatDongByNguoiThucHienAndHanhDong(Long nguoiThucHienId, String hanhDong, Pageable pageable) {
+        Page<LichSuHoatDong> entities = hoatDongRepository.findByNguoiThucHienIdAndHanhDongOrderByNgayTaoDesc(nguoiThucHienId, hanhDong, pageable);
+        return entities.map(hoatDongMapper::toResponseDto);
+    }
+    
+    // Lấy hoạt động theo người thực hiện và hành động (không phân trang)
+    @Transactional(readOnly = true)
+    public List<HoatDongResponseDto> getHoatDongByNguoiThucHienAndHanhDong(Long nguoiThucHienId, String hanhDong) {
+        List<LichSuHoatDong> entities = hoatDongRepository.findByNguoiThucHienIdAndHanhDongOrderByNgayTaoDesc(nguoiThucHienId, hanhDong);
+        return hoatDongMapper.toResponseDtoList(entities);
     }
     
     // Ghi log hoạt động (phương thức tiện ích)

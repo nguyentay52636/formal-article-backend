@@ -12,6 +12,10 @@ import org.example.dto.HoatDongDto.HoatDongResponseDto;
 import org.example.dto.HoatDongDto.HoatDongUpdateDto;
 import org.example.service.HoatDongService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -144,24 +148,32 @@ public class HoatDongController {
     }
 
     @Operation(
-            summary = "Delete all activity logs",
-            description = "Deletes all activity logs (admin only - use with caution)"
+            summary = "Delete activity logs",
+            description = "Deletes activity logs - all logs or by specific user (admin only - use with caution)"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "All activity logs deleted successfully"),
+            @ApiResponse(responseCode = "200", description = "Activity logs deleted successfully"),
             @ApiResponse(responseCode = "403", description = "Access denied - admin only")
     })
     @DeleteMapping
-    public ResponseEntity<?> deleteAllHoatDong() {
+    public ResponseEntity<?> deleteHoatDongByUser(
+            @RequestParam(required = false) Long userId) {
         try {
             // Note: This should be protected by admin role in production
-            hoatDongService.deleteAllHoatDong();
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "All activity logs deleted successfully");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            if (userId != null) {
+                hoatDongService.deleteHoatDongByNguoiThucHien(userId);
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Activity logs for user " + userId + " deleted successfully");
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                hoatDongService.deleteAllHoatDong();
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "All activity logs deleted successfully");
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to delete all activity logs: " + e.getMessage());
+            error.put("error", "Failed to delete activity logs: " + e.getMessage());
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -257,6 +269,60 @@ public class HoatDongController {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to log comment activity: " + e.getMessage());
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Operation(
+            summary = "Get all activity logs",
+            description = "Retrieves all activity logs"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Activity logs retrieved successfully"
+            )
+    })
+    @GetMapping
+    public ResponseEntity<?> getAllHoatDong() {
+        try {
+            List<HoatDongResponseDto> activities = hoatDongService.getAllHoatDong();
+            return new ResponseEntity<>(activities, HttpStatus.OK);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to retrieve activity logs: " + e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Operation(
+            summary = "Get document download activities",
+            description = "Retrieves all document download activities (TAI_TAI_LIEU)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Document download activities retrieved successfully"
+            )
+    })
+    @GetMapping("/tailieu")
+    public ResponseEntity<?> getTaiLieuActivities(
+            @RequestParam(required = false) Long userId) {
+        try {
+            List<HoatDongResponseDto> activities;
+            
+            if (userId != null) {
+                // Get download activities for specific user
+                activities = hoatDongService.getHoatDongByNguoiThucHienAndHanhDong(userId, "TAI_TAI_LIEU");
+            } else {
+                // Get all download activities
+                activities = hoatDongService.getHoatDongByHanhDong("TAI_TAI_LIEU");
+            }
+            
+            return new ResponseEntity<>(activities, HttpStatus.OK);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to retrieve document download activities: " + e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

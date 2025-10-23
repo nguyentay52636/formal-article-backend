@@ -65,4 +65,16 @@ public interface HoatDongRepository extends JpaRepository<LichSuHoatDong, Long> 
            "h.thongTinBoSung LIKE %:keyword% " +
            "ORDER BY h.ngayTao DESC")
     Page<LichSuHoatDong> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+    
+    // Tìm hoạt động theo hành động với phân trang
+    Page<LichSuHoatDong> findByHanhDongOrderByNgayTaoDesc(String hanhDong, Pageable pageable);
+    
+    // Tìm hoạt động theo người thực hiện và hành động với phân trang
+    Page<LichSuHoatDong> findByNguoiThucHienIdAndHanhDongOrderByNgayTaoDesc(Long nguoiThucHienId, String hanhDong, Pageable pageable);
+    
+    // Tìm hoạt động theo người thực hiện và hành động (không phân trang)
+    List<LichSuHoatDong> findByNguoiThucHienIdAndHanhDongOrderByNgayTaoDesc(Long nguoiThucHienId, String hanhDong);
+    
+    // Xóa hoạt động theo người thực hiện
+    void deleteByNguoiThucHienId(Long nguoiThucHienId);
 }
