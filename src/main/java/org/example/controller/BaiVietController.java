@@ -33,7 +33,7 @@ public class BaiVietController {
     private BaiVietService baiVietService;
 
     @Operation(
-            summary = "➕ Thêm mới",
+            summary = "Thêm mới",
             description = "Tạo bài viết mới"
     )
     @ApiResponses(value = {
@@ -84,7 +84,7 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "📄 Chi tiết bài viết",
+            summary = "Chi tiết bài viết",
             description = "Lấy chi tiết 1 bài viết theo id hoặc slug"
     )
     @ApiResponses(value = {
@@ -121,7 +121,7 @@ public class BaiVietController {
 
 
     @Operation(
-            summary = "🔥 Bài viết nổi bật",
+            summary = "Bài viết nổi bật",
             description = "Lấy danh sách các bài viết nổi bật (join với noi_bat_bai_viet)"
     )
     @ApiResponses(value = {
@@ -167,7 +167,7 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "🕵️‍♂️ Tìm kiếm bài viết",
+            summary = "Tìm kiếm bài viết",
             description = "Tìm theo tiêu đề, nội dung, mô tả, tác giả, v.v."
     )
     @ApiResponses(value = {
@@ -267,29 +267,6 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "Get latest articles",
-            description = "Retrieves the latest published articles"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Latest articles retrieved successfully",
-                    content = @Content(schema = @Schema(implementation = BaiVietResponseDto.class))
-            )
-    })
-    @GetMapping("/latest")
-    public ResponseEntity<?> getLatestArticles() {
-        try {
-            List<BaiVietResponseDto> articles = baiVietService.getLatestArticles();
-            return new ResponseEntity<>(articles, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Operation(
             summary = "Get popular articles",
             description = "Retrieves the most popular published articles based on reactions"
     )
@@ -313,7 +290,7 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "✏️ Cập nhật",
+            summary = "Cập nhật",
             description = "Cập nhật nội dung, tiêu đề, hình ảnh, v.v."
     )
     @ApiResponses(value = {
@@ -346,7 +323,7 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "📤 Đăng / Gỡ bài",
+            summary = "Đăng / Gỡ bài",
             description = "Thay đổi trạng thái: \"nháp → đã đăng\" hoặc \"đã đăng → ẩn\""
     )
     @ApiResponses(value = {
@@ -374,7 +351,7 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "🗑️ Xóa",
+            summary = "Xóa",
             description = "Xóa (hoặc đánh dấu đã xóa) bài viết"
     )
     @ApiResponses(value = {
