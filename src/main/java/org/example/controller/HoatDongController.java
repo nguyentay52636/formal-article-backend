@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import org.example.dto.HoatDongDto.HoatDongCreateDto;
 import org.example.dto.HoatDongDto.HoatDongResponseDto;
 import org.example.dto.HoatDongDto.HoatDongUpdateDto;
+import org.example.dto.HoatDongDto.TaiTaiLieuLogDto;
+import org.example.dto.HoatDongDto.BinhLuanLogDto;
 import org.example.service.HoatDongService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -210,20 +212,16 @@ public class HoatDongController {
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
     @PostMapping("/tai-tai-lieu")
-    public ResponseEntity<?> logTaiTaiLieu(
-            @RequestParam Long nguoiThucHienId,
-            @RequestParam Long taiLieuId,
-            @RequestParam String tenTaiLieu,
-            @RequestParam(required = false) String thongTinBoSung) {
+    public ResponseEntity<?> logTaiTaiLieu(@Valid @RequestBody TaiTaiLieuLogDto logDto) {
         try {
             hoatDongService.logActivity(
-                nguoiThucHienId,
+                logDto.getNguoiThucHienId(),
                 "TaiLieu",
-                taiLieuId,
+                logDto.getTaiLieuId(),
                 "TAI_TAI_LIEU",
                 null,
-                "Downloaded: " + tenTaiLieu,
-                thongTinBoSung
+                "Downloaded: " + logDto.getTenTaiLieu(),
+                logDto.getThongTinBoSung()
             );
             
             Map<String, String> response = new HashMap<>();
@@ -245,21 +243,16 @@ public class HoatDongController {
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
     @PostMapping("/binh-luan")
-    public ResponseEntity<?> logBinhLuan(
-            @RequestParam Long nguoiThucHienId,
-            @RequestParam Long baiVietId,
-            @RequestParam Long binhLuanId,
-            @RequestParam String noiDung,
-            @RequestParam(required = false) String thongTinBoSung) {
+    public ResponseEntity<?> logBinhLuan(@Valid @RequestBody BinhLuanLogDto logDto) {
         try {
             hoatDongService.logActivity(
-                nguoiThucHienId,
+                logDto.getNguoiThucHienId(),
                 "BaiViet",
-                baiVietId,
+                logDto.getBaiVietId(),
                 "BINH_LUAN",
                 null,
-                "Commented: " + noiDung.substring(0, Math.min(noiDung.length(), 100)) + "...",
-                thongTinBoSung
+                "Commented: " + logDto.getNoiDung().substring(0, Math.min(logDto.getNoiDung().length(), 100)) + "...",
+                logDto.getThongTinBoSung()
             );
             
             Map<String, String> response = new HashMap<>();

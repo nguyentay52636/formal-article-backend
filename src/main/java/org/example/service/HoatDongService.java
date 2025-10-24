@@ -113,7 +113,7 @@ public class HoatDongService {
         return hoatDongMapper.toResponseDtoList(entities);
     }
     
-    // Lấy hoạt động theo hành động
+    // Lấy hoạt động theo hành động (không phân trang)
     @Transactional(readOnly = true)
     public List<HoatDongResponseDto> getHoatDongByHanhDong(String hanhDong) {
         List<LichSuHoatDong> entities = hoatDongRepository.findByHanhDongOrderByNgayTaoDesc(hanhDong);
@@ -197,13 +197,6 @@ public class HoatDongService {
         return entities.map(hoatDongMapper::toResponseDto);
     }
     
-    // Lấy hoạt động theo hành động (không phân trang)
-    @Transactional(readOnly = true)
-    public List<HoatDongResponseDto> getHoatDongByHanhDong(String hanhDong) {
-        List<LichSuHoatDong> entities = hoatDongRepository.findByHanhDongOrderByNgayTaoDesc(hanhDong);
-        return hoatDongMapper.toResponseDtoList(entities);
-    }
-    
     // Lấy hoạt động theo người thực hiện và hành động với phân trang
     @Transactional(readOnly = true)
     public Page<HoatDongResponseDto> getHoatDongByNguoiThucHienAndHanhDong(Long nguoiThucHienId, String hanhDong, Pageable pageable) {
@@ -226,7 +219,13 @@ public class HoatDongService {
         createDto.setDoiTuongId(doiTuongId);
         createDto.setHanhDong(hanhDong);
         createDto.setTruoc(truoc);
-        createDto.setSau(sau);
+        // Chỉ set sau nếu nó không null và không empty
+        if (sau != null && !sau.trim().isEmpty()) {
+            createDto.setSau(sau);
+        } else {
+            // Set một giá trị mặc định để tránh constraint error
+            createDto.setSau("");
+        }
         createDto.setThongTinBoSung(thongTinBoSung);
         
         createHoatDong(createDto);
