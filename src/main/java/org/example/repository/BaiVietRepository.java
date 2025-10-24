@@ -66,6 +66,10 @@ public interface BaiVietRepository extends JpaRepository<BaiViet, Long> {
     @Query("SELECT b FROM BaiViet b WHERE b.ngayXuatBan BETWEEN :startDate AND :endDate AND b.trangThai = :trangThai")
     Page<BaiViet> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("trangThai") BaiViet.TrangThai trangThai, Pageable pageable);
 
+    // Get featured articles (join with noi_bat_bai_viet)
+    @Query("SELECT DISTINCT b FROM BaiViet b JOIN NoiBatBaiViet nbbv ON b.id = nbbv.baiVietId WHERE b.trangThai = :trangThai ORDER BY nbbv.viTri ASC, b.ngayXuatBan DESC")
+    List<BaiViet> findNoiBatBaiViet(@Param("trangThai") BaiViet.TrangThai trangThai);
+
     long countByTrangThai(BaiViet.TrangThai trangThai);
 
     long countByTacGiaId(Long tacGiaId);

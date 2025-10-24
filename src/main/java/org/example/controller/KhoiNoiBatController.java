@@ -100,10 +100,6 @@ public class KhoiNoiBatController {
         }
     }
 
-
-
-
-
     @Operation(
             summary = "Cập nhật khối nổi bật",
             description = "Cập nhật thông tin của một khối nổi bật theo ID. Chỉ các trường được cung cấp mới được cập nhật."

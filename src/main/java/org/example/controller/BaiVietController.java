@@ -33,8 +33,8 @@ public class BaiVietController {
     private BaiVietService baiVietService;
 
     @Operation(
-            summary = "Create a new article",
-            description = "Creates a new article with the provided information. URL path must be unique."
+            summary = "➕ Thêm mới",
+            description = "Tạo bài viết mới"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -61,7 +61,7 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "Get all articles",
+            summary = "Lấy tất cả bài viết",
             description = "Retrieves a list of all articles in the system"
     )
     @ApiResponses(value = {
@@ -84,8 +84,8 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "Get article by ID",
-            description = "Retrieves a specific article by its ID"
+            summary = "📄 Chi tiết bài viết",
+            description = "Lấy chi tiết 1 bài viết theo id hoặc slug"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -96,11 +96,21 @@ public class BaiVietController {
             @ApiResponse(responseCode = "404", description = "Article not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<?> getBaiVietById(
-            @Parameter(description = "Article ID", example = "1")
-            @PathVariable Long id) {
+    public ResponseEntity<?> getBaiVietByIdOrSlug(
+            @Parameter(description = "Article ID hoặc slug", example = "1 hoặc bai-viet-mau")
+            @PathVariable String id) {
         try {
-            BaiVietResponseDto responseDto = baiVietService.getBaiVietById(id);
+            BaiVietResponseDto responseDto;
+            
+            // Kiểm tra xem là ID (số) hay slug (chuỗi)
+            if (id.matches("\\d+")) {
+                // Là ID
+                responseDto = baiVietService.getBaiVietById(Long.parseLong(id));
+            } else {
+                // Là slug
+                responseDto = baiVietService.getBaiVietByDuongDan(id);
+            }
+            
             return new ResponseEntity<>(responseDto, HttpStatus.OK);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();
@@ -109,29 +119,27 @@ public class BaiVietController {
         }
     }
 
+
     @Operation(
-            summary = "Get article by URL path",
-            description = "Retrieves a specific article by its URL path"
+            summary = "🔥 Bài viết nổi bật",
+            description = "Lấy danh sách các bài viết nổi bật (join với noi_bat_bai_viet)"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Article found",
+                    description = "Featured articles retrieved successfully",
                     content = @Content(schema = @Schema(implementation = BaiVietResponseDto.class))
-            ),
-            @ApiResponse(responseCode = "404", description = "Article not found")
+            )
     })
-    @GetMapping("/path/{duongDan}")
-    public ResponseEntity<?> getBaiVietByDuongDan(
-            @Parameter(description = "URL path", example = "bai-viet-mau")
-            @PathVariable String duongDan) {
+    @GetMapping("/noi-bat")
+    public ResponseEntity<?> getNoiBatBaiViet() {
         try {
-            BaiVietResponseDto responseDto = baiVietService.getBaiVietByDuongDan(duongDan);
-            return new ResponseEntity<>(responseDto, HttpStatus.OK);
+            List<BaiVietResponseDto> articles = baiVietService.getNoiBatBaiViet();
+            return new ResponseEntity<>(articles, HttpStatus.OK);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -159,8 +167,8 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "Search articles by keyword",
-            description = "Search published articles by keyword in title or summary"
+            summary = "🕵️‍♂️ Tìm kiếm bài viết",
+            description = "Tìm theo tiêu đề, nội dung, mô tả, tác giả, v.v."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -169,9 +177,9 @@ public class BaiVietController {
                     content = @Content(schema = @Schema(implementation = BaiVietResponseDto.class))
             )
     })
-    @GetMapping("/search")
-    public ResponseEntity<?> searchByKeyword(
-            @Parameter(description = "Search keyword", example = "java")
+    @GetMapping("/tim-kiem")
+    public ResponseEntity<?> timKiemBaiViet(
+            @Parameter(description = "Từ khóa tìm kiếm", example = "java")
             @RequestParam String keyword) {
         try {
             List<BaiVietResponseDto> articles = baiVietService.searchByKeyword(keyword);
@@ -305,8 +313,8 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "Update article",
-            description = "Updates an existing article with new information"
+            summary = "✏️ Cập nhật",
+            description = "Cập nhật nội dung, tiêu đề, hình ảnh, v.v."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -338,23 +346,25 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "Publish article",
-            description = "Publishes an article by changing its status to XUAT_BAN"
+            summary = "📤 Đăng / Gỡ bài",
+            description = "Thay đổi trạng thái: \"nháp → đã đăng\" hoặc \"đã đăng → ẩn\""
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Article published successfully",
+                    description = "Article status updated successfully",
                     content = @Content(schema = @Schema(implementation = BaiVietResponseDto.class))
             ),
             @ApiResponse(responseCode = "404", description = "Article not found")
     })
-    @PostMapping("/{id}/publish")
-    public ResponseEntity<?> publishBaiViet(
+    @PatchMapping("/{id}/trang-thai")
+    public ResponseEntity<?> thayDoiTrangThai(
             @Parameter(description = "Article ID", example = "1")
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @Parameter(description = "Trạng thái mới", example = "XUAT_BAN")
+            @RequestParam BaiViet.TrangThai trangThai) {
         try {
-            BaiVietResponseDto responseDto = baiVietService.publishBaiViet(id);
+            BaiVietResponseDto responseDto = baiVietService.thayDoiTrangThai(id, trangThai);
             return new ResponseEntity<>(responseDto, HttpStatus.OK);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();
@@ -364,8 +374,8 @@ public class BaiVietController {
     }
 
     @Operation(
-            summary = "Delete article",
-            description = "Deletes an article by its ID"
+            summary = "🗑️ Xóa",
+            description = "Xóa (hoặc đánh dấu đã xóa) bài viết"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Article deleted successfully"),

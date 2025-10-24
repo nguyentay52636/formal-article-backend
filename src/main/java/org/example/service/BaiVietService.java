@@ -324,6 +324,30 @@ public class BaiVietService {
         return baiVietMapper.toResponseDto(unpublishedBaiViet);
     }
 
+    // Get featured articles (noi bat bai viet)
+    public List<BaiVietResponseDto> getNoiBatBaiViet() {
+        return baiVietRepository.findNoiBatBaiViet(BaiViet.TrangThai.XUAT_BAN)
+                .stream()
+                .map(baiVietMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    // Change article status
+    public BaiVietResponseDto thayDoiTrangThai(Long id, BaiViet.TrangThai trangThai) {
+        BaiViet baiViet = baiVietRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bài viết không tồn tại với ID: " + id));
+
+        baiViet.setTrangThai(trangThai);
+        
+        // Nếu chuyển sang XUAT_BAN và chưa có ngày xuất bản
+        if (trangThai == BaiViet.TrangThai.XUAT_BAN && baiViet.getNgayXuatBan() == null) {
+            baiViet.setNgayXuatBan(LocalDateTime.now());
+        }
+
+        BaiViet updatedBaiViet = baiVietRepository.save(baiViet);
+        return baiVietMapper.toResponseDto(updatedBaiViet);
+    }
+
     // Get statistics
     public long countByTrangThai(BaiViet.TrangThai trangThai) {
         return baiVietRepository.countByTrangThai(trangThai);
