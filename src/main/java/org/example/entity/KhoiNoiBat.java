@@ -21,20 +21,17 @@ public class KhoiNoiBat {
     @Column(name = "id")
     private Long id;
     
+    @Column(name = "ma", nullable = false, length = 50, unique = true)
+    private String ma;
+    
     @Column(name = "ten", nullable = false, length = 100)
     private String ten;
     
-    @Column(name = "mo_ta", length = 500)
-    private String moTa;
+    @Column(name = "cau_hinh", columnDefinition = "LONGTEXT")
+    private String cauHinh;
     
-    @Column(name = "vi_tri")
-    private Integer viTri;
-    
-    @Column(name = "trang_thai")
-    private String trangThai;
-    
-    @Column(name = "thong_tin_bo_sung", columnDefinition = "LONGTEXT")
-    private String thongTinBoSung;
+    @Column(name = "kich_hoat", nullable = false)
+    private Boolean kichHoat = true;
     
     @CreationTimestamp
     @Column(name = "ngay_tao", nullable = false, updatable = false)
