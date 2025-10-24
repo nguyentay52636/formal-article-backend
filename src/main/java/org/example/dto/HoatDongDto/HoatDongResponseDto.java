@@ -1,5 +1,6 @@
 package org.example.dto.HoatDongDto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class HoatDongResponseDto {
     
     private String sau;
     
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime ngayTao;
     
     private String thongTinBoSung;

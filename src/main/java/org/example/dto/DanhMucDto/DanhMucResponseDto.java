@@ -35,11 +35,11 @@ public class DanhMucResponseDto {
     @Schema(description = "Trạng thái kích hoạt", example = "true")
     private Boolean kichHoat;
     
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description = "Ngày tạo", example = "2024-01-15T10:30:00")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Ngày tạo", example = "2024-01-15 10:30:00")
     private LocalDateTime ngayTao;
     
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description = "Ngày cập nhật", example = "2024-01-20T14:45:00")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Ngày cập nhật", example = "2024-01-20 14:45:00")
     private LocalDateTime ngayCapNhat;
 }

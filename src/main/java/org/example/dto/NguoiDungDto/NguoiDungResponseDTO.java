@@ -33,8 +33,8 @@ public class NguoiDungResponseDTO {
     @Schema(description = "Gender", example = "Nam")
     private String gioiTinh;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description = "Date of birth", example = "1990-01-15T00:00:00")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Date of birth", example = "1990-01-15 00:00:00")
     private LocalDateTime ngaySinh;
 
     @Schema(description = "Address", example = "123 Main St, City")
@@ -52,11 +52,11 @@ public class NguoiDungResponseDTO {
     @Schema(description = "User role information")
     private VaiTroResponseDTO vaiTro;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description = "Creation timestamp", example = "2024-01-15T10:30:00")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Creation timestamp", example = "2024-01-15 10:30:00")
     private LocalDateTime ngayTao;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description = "Last update timestamp", example = "2024-01-20T14:45:00")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Last update timestamp", example = "2024-01-20 14:45:00")
     private LocalDateTime ngayCapNhat;
 }

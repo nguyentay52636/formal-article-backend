@@ -28,7 +28,7 @@ public class BaiVietResponseDto {
     private String tomTat;
     private String noiDungHtml;
     private BaiViet.TrangThai trangThai;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime ngayXuatBan;
     
     private Long anhDaiDienId;
@@ -36,9 +36,9 @@ public class BaiVietResponseDto {
     
     private String thongTinBoSung;
     
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime ngayTao;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime ngayCapNhat;
     
     // Thông tin thống kê

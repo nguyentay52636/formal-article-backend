@@ -27,7 +27,11 @@ public interface KhoiNoiBatRepository extends JpaRepository<KhoiNoiBat, Long> {
     // Check if ten exists
     boolean existsByTen(String ten);
     
+    // Check if ma exists (excluding current record for update)
+    @Query("SELECT COUNT(k) > 0 FROM KhoiNoiBat k WHERE k.ma = :ma AND k.id != :id")
+    boolean existsByMaAndIdNot(@Param("ma") String ma, @Param("id") Long id);
     
+    // Check if ten exists (excluding current record for update)
     @Query("SELECT COUNT(k) > 0 FROM KhoiNoiBat k WHERE k.ten = :ten AND k.id != :id")
     boolean existsByTenAndIdNot(@Param("ten") String ten, @Param("id") Long id);
     

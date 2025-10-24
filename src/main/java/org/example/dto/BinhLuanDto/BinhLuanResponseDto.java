@@ -42,12 +42,12 @@ public class BinhLuanResponseDto {
     @Schema(description = "Additional information", example = "Additional comment details")
     private String thongTinBoSung;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description = "Creation timestamp", example = "2024-01-15T10:30:00")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Creation timestamp", example = "2024-01-15 10:30:00")
     private LocalDateTime ngayTao;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Schema(description = "Last update timestamp", example = "2024-01-20T14:45:00")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Last update timestamp", example = "2024-01-20 14:45:00")
     private LocalDateTime ngayCapNhat;
 
     @Data
