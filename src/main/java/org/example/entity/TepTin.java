@@ -37,6 +37,8 @@ public class TepTin {
     
     @Column(name = "loai", nullable = false)
     private String loaiTep;
+     @Column(name = "ten_tap_tin", nullable = false)
+    private String tenTapTin;
     
     @Column(name = "dinh_dang", nullable = false, length = 100)
     private String dinhDang;
