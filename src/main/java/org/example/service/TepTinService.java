@@ -42,7 +42,31 @@ public class TepTinService {
     
     private static final String UPLOAD_DIR = "uploads/";
     
-    // ========== FILE UPLOAD & DOWNLOAD ==========
+    
+    public TepTinResponseDto createTepTin(TepTinCreateDto createDTO) {
+        NguoiDung nguoiTao = nguoiDungRepository.findById(createDTO.getNguoiTaoId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + createDTO.getNguoiTaoId()));
+        
+        // Check if ten already exists
+        if (tepTinRepository.existsByTen(createDTO.getTen())) {
+            throw new RuntimeException("Tên file đã tồn tại: " + createDTO.getTen());
+        }
+        
+        // Check if duongDan already exists
+        if (tepTinRepository.existsByDuongDan(createDTO.getDuongDan())) {
+            throw new RuntimeException("Đường dẫn file đã tồn tại: " + createDTO.getDuongDan());
+        }
+        
+        // Convert DTO to Entity
+        TepTin tepTin = tepTinMapper.toEntity(createDTO);
+        tepTin.setNguoiTao(nguoiTao);
+        
+        // Save entity
+        TepTin savedTepTin = tepTinRepository.save(tepTin);
+        
+        // Convert to Response DTO
+        return tepTinMapper.toResponseDTO(savedTepTin);
+    }
     
     public TepTinResponseDto uploadFile(MultipartFile file, String moTa, String loaiTep, Long nguoiTaoId) {
         try {
@@ -180,35 +204,20 @@ public class TepTinService {
     }
     
     public void deleteFile(Long id) {
-        TepTin tepTin = tepTinRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy file với id: " + id));
+     
         
         try {
-            // Delete file from disk
-            Path filePath = Paths.get(tepTin.getDuongDanLuu());
-            if (Files.exists(filePath)) {
-                Files.delete(filePath);
-            }
+               TepTin tepTin = tepTinRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy file với id: " + id));
+            tepTinRepository.deleteById(id);
+            
         } catch (IOException e) {
-            // Log error but continue with database deletion
-            System.err.println("Lỗi khi xóa file từ disk: " + e.getMessage());
+            throw new RuntimeException("Lỗi khi xóa file: " + e.getMessage());
         }
-        
-        tepTinRepository.deleteById(id);
     }
     
-    // ========== FILE SEARCH & FILTER ==========
-    
     public List<TepTinResponseDto> searchFiles(String keyword, String loaiTep) {
-        List<TepTin> files;
-        
-        if (loaiTep != null) {
-            files = tepTinRepository.searchByKeywordAndLoaiTep(keyword, loaiTep);
-        } else {
-            files = tepTinRepository.searchByKeyword(keyword);
-        }
-        
-        return files.stream()
+        return tepTinRepository.searchByKeyword(keyword).stream()
                 .map(tepTinMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }

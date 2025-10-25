@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.example.dto.TepTin.TepTinCreateDto;
 import org.example.dto.TepTin.TepTinResponseDto;
 import org.example.dto.TepTin.TepTinUpdateDto;
 import org.example.service.TepTinService;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,16 +47,10 @@ public class TepTinController {
     })
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFile(
-            @Parameter(description = "File to upload")
-            @RequestParam("file") MultipartFile file,
-            @Parameter(description = "Mô tả file")
-            @RequestParam(value = "moTa", required = false) String moTa,
-            @Parameter(description = "Loại file (anh, tai_lieu, khac)")
-            @RequestParam(value = "loaiTep", required = false) String loaiTep,
-            @Parameter(description = "ID người tạo file")
-            @RequestParam("nguoiTaoId") Long nguoiTaoId) {
+            @Parameter(description = "Thông tin file upload")
+            @Valid @RequestBody TepTinCreateDto createDTO) {
         try {
-            TepTinResponseDto responseDTO = tepTinService.uploadFile(file, moTa, loaiTep, nguoiTaoId);
+            TepTinResponseDto responseDTO = tepTinService.createTepTin(createDTO);
             return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();
