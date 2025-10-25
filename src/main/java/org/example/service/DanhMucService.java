@@ -3,9 +3,11 @@ package org.example.service;
 import org.example.dto.DanhMucDto.DanhMucCreateDto;
 import org.example.dto.DanhMucDto.DanhMucResponseDto;
 import org.example.dto.DanhMucDto.DanhMucUpdateDto;
+import org.example.dto.BaiVietDto.BaiVietResponseDto;
 import org.example.entity.DanhMuc;
 import org.example.mapping.DanhMucMapper;
 import org.example.repository.DanhMucRepository;
+import org.example.service.BaiVietService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,9 @@ public class DanhMucService {
 
     @Autowired
     private DanhMucMapper danhMucMapper;
+
+    @Autowired
+    private BaiVietService baiVietService;
 
     // Create
     public DanhMucResponseDto createDanhMuc(DanhMucCreateDto requestDTO) {
@@ -74,20 +79,6 @@ public class DanhMucService {
         DanhMuc danhMuc = danhMucRepository.findByTen(ten)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với tên: " + ten));
         return danhMucMapper.toResponseDTO(danhMuc);
-    }
-
-    // Read by danh muc cha - Sử dụng mapper
-    public List<DanhMucResponseDto> getDanhMucByDanhMucCha(Long danhMucCha) {
-        return danhMucRepository.findByDanhMucCha(danhMucCha).stream()
-                .map(danhMucMapper::toResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    // Read by danh muc cha and active status - Sử dụng mapper
-    public List<DanhMucResponseDto> getDanhMucByDanhMucChaAndKichHoat(Long danhMucCha, Boolean kichHoat) {
-        return danhMucRepository.findByDanhMucChaAndKichHoatOrderByThuTu(danhMucCha, kichHoat).stream()
-                .map(danhMucMapper::toResponseDTO)
-                .collect(Collectors.toList());
     }
 
     // Read by kich hoat status - Sử dụng mapper
@@ -156,5 +147,15 @@ public class DanhMucService {
         danhMuc.setThuTu(thuTu);
         DanhMuc updatedDanhMuc = danhMucRepository.save(danhMuc);
         return danhMucMapper.toResponseDTO(updatedDanhMuc);
+    }
+
+    // Get articles by category
+    public List<BaiVietResponseDto> getBaiVietByDanhMuc(Long danhMucId) {
+        // Check if category exists
+        if (!danhMucRepository.existsById(danhMucId)) {
+            throw new RuntimeException("Không tìm thấy danh mục với id: " + danhMucId);
+        }
+        
+        return baiVietService.getBaiVietByDanhMuc(danhMucId);
     }
 }

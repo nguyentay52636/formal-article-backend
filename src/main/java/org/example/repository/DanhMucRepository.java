@@ -18,14 +18,8 @@ public interface DanhMucRepository extends JpaRepository<DanhMuc, Long> {
     // Find by ten (exact match)
     Optional<DanhMuc> findByTen(String ten);
     
-    // Find by danh muc cha
-    List<DanhMuc> findByDanhMucCha(Long danhMucCha);
-    
     // Find by kich hoat status
     List<DanhMuc> findByKichHoat(Boolean kichHoat);
-    
-    // Find by danh muc cha and kich hoat
-    List<DanhMuc> findByDanhMucChaAndKichHoat(Long danhMucCha, Boolean kichHoat);
     
     // Check if duong dan exists
     boolean existsByDuongDan(String duongDan);
@@ -58,8 +52,4 @@ public interface DanhMucRepository extends JpaRepository<DanhMuc, Long> {
     // Find all active categories ordered by thu tu
     @Query("SELECT d FROM DanhMuc d WHERE d.kichHoat = true ORDER BY d.thuTu ASC")
     List<DanhMuc> findActiveOrderByThuTu();
-    
-    // Find categories by parent and active status ordered by thu tu
-    @Query("SELECT d FROM DanhMuc d WHERE d.danhMucCha = :danhMucCha AND d.kichHoat = :kichHoat ORDER BY d.thuTu ASC")
-    List<DanhMuc> findByDanhMucChaAndKichHoatOrderByThuTu(@Param("danhMucCha") Long danhMucCha, @Param("kichHoat") Boolean kichHoat);
 }

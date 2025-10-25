@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.example.dto.DanhMucDto.DanhMucCreateDto;
 import org.example.dto.DanhMucDto.DanhMucResponseDto;
 import org.example.dto.DanhMucDto.DanhMucUpdateDto;
+import org.example.dto.BaiVietDto.BaiVietResponseDto;
 import org.example.service.DanhMucService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -116,31 +117,6 @@ public class DanhMucController {
         }
     }
 
-    @Operation(
-            summary = "Lấy danh mục theo đường dẫn",
-            description = "Lấy thông tin chi tiết của một danh mục theo đường dẫn URL"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lấy danh mục thành công",
-                    content = @Content(schema = @Schema(implementation = DanhMucResponseDto.class))
-            ),
-            @ApiResponse(responseCode = "404", description = "Không tìm thấy danh mục")
-    })
-    @GetMapping("/duong-dan/{duongDan}")
-    public ResponseEntity<?> getDanhMucByDuongDan(
-            @Parameter(description = "Đường dẫn danh mục", example = "tin-tuc")
-            @PathVariable String duongDan) {
-        try {
-            DanhMucResponseDto responseDTO = danhMucService.getDanhMucByDuongDan(duongDan);
-            return new ResponseEntity<>(responseDTO, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-        }
-    }
 
     @Operation(
             summary = "Lấy danh mục theo tên",
@@ -168,44 +144,31 @@ public class DanhMucController {
         }
     }
 
-    @Operation(
-            summary = "Lấy danh mục theo danh mục cha",
-            description = "Lấy danh sách các danh mục con theo danh mục cha"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lấy danh sách thành công",
-                    content = @Content(schema = @Schema(implementation = DanhMucResponseDto.class))
-            )
-    })
-    @GetMapping("/parent/{danhMucCha}")
-    public ResponseEntity<List<DanhMucResponseDto>> getDanhMucByDanhMucCha(
-            @Parameter(description = "ID danh mục cha", example = "1")
-            @PathVariable Long danhMucCha) {
-        List<DanhMucResponseDto> danhMucs = danhMucService.getDanhMucByDanhMucCha(danhMucCha);
-        return new ResponseEntity<>(danhMucs, HttpStatus.OK);
-    }
 
     @Operation(
-            summary = "Lấy danh mục theo danh mục cha và trạng thái",
-            description = "Lấy danh sách các danh mục con theo danh mục cha và trạng thái kích hoạt"
+            summary = "Lấy danh sách bài viết theo danh mục",
+            description = "Lấy danh sách tất cả bài viết thuộc danh mục cụ thể"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Lấy danh sách thành công",
-                    content = @Content(schema = @Schema(implementation = DanhMucResponseDto.class))
-            )
+                    description = "Lấy danh sách bài viết thành công",
+                    content = @Content(schema = @Schema(implementation = BaiVietResponseDto.class))
+            ),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy danh mục")
     })
-    @GetMapping("/parent/{danhMucCha}/status/{kichHoat}")
-    public ResponseEntity<List<DanhMucResponseDto>> getDanhMucByDanhMucChaAndKichHoat(
-            @Parameter(description = "ID danh mục cha", example = "1")
-            @PathVariable Long danhMucCha,
-            @Parameter(description = "Trạng thái kích hoạt", example = "true")
-            @PathVariable Boolean kichHoat) {
-        List<DanhMucResponseDto> danhMucs = danhMucService.getDanhMucByDanhMucChaAndKichHoat(danhMucCha, kichHoat);
-        return new ResponseEntity<>(danhMucs, HttpStatus.OK);
+    @GetMapping("/{id}/bai-viet")
+    public ResponseEntity<?> getBaiVietByDanhMuc(
+            @Parameter(description = "ID danh mục", example = "1")
+            @PathVariable Long id) {
+        try {
+            List<BaiVietResponseDto> baiViets = danhMucService.getBaiVietByDanhMuc(id);
+            return new ResponseEntity<>(baiViets, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
     }
 
     @Operation(
