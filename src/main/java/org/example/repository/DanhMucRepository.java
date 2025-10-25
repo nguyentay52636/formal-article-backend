@@ -18,7 +18,6 @@ public interface DanhMucRepository extends JpaRepository<DanhMuc, Long> {
     // Find by ten (exact match)
     Optional<DanhMuc> findByTen(String ten);
     
-    // Find by kich hoat status
     List<DanhMuc> findByKichHoat(Boolean kichHoat);
     
     // Check if duong dan exists

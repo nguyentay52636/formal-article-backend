@@ -158,4 +158,14 @@ public class DanhMucService {
         
         return baiVietService.getBaiVietByDanhMuc(danhMucId);
     }
+
+    // Get articles by category (without BaiVietTepTin to avoid enum error)
+    public List<BaiVietResponseDto> getBaiVietByDanhMucSimple(Long danhMucId) {
+        // Check if category exists
+        if (!danhMucRepository.existsById(danhMucId)) {
+            throw new RuntimeException("Không tìm thấy danh mục với id: " + danhMucId);
+        }
+        
+        return baiVietService.getBaiVietByDanhMucSimple(danhMucId);
+    }
 }

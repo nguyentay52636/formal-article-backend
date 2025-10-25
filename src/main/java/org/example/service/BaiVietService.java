@@ -5,6 +5,7 @@ import org.example.dto.BaiVietDto.BaiVietResponseDto;
 import org.example.dto.BaiVietDto.BaiVietUpdateDto;
 import org.example.entity.*;
 import org.example.mapping.BaiVietMapper;
+import org.example.mapping.BaiVietSimpleMapper;
 import org.example.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,9 @@ public class BaiVietService {
 
     @Autowired
     private BaiVietMapper baiVietMapper;
+
+    @Autowired
+    private BaiVietSimpleMapper baiVietSimpleMapper;
 
     @Autowired
     private DanhMucRepository danhMucRepository;
@@ -157,6 +161,14 @@ public class BaiVietService {
         return baiVietRepository.findByDanhMucId(danhMucId)
                 .stream()
                 .map(baiVietMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    // Get by danh mục without pagination (simple version without BaiVietTepTin)
+    public List<BaiVietResponseDto> getBaiVietByDanhMucSimple(Long danhMucId) {
+        return baiVietRepository.findByDanhMucId(danhMucId)
+                .stream()
+                .map(baiVietSimpleMapper::toSimpleResponseDto)
                 .collect(Collectors.toList());
     }
 

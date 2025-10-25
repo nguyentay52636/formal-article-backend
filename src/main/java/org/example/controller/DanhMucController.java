@@ -162,7 +162,7 @@ public class DanhMucController {
             @Parameter(description = "ID danh mục", example = "1")
             @PathVariable Long id) {
         try {
-            List<BaiVietResponseDto> baiViets = danhMucService.getBaiVietByDanhMuc(id);
+            List<BaiVietResponseDto> baiViets = danhMucService.getBaiVietByDanhMucSimple(id);
             return new ResponseEntity<>(baiViets, HttpStatus.OK);
         } catch (RuntimeException e) {
             Map<String, String> error = new HashMap<>();
