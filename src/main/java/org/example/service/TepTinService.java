@@ -204,16 +204,9 @@ public class TepTinService {
     }
     
     public void deleteFile(Long id) {
-     
-        
-        try {
-               TepTin tepTin = tepTinRepository.findById(id)
+        TepTin tepTin = tepTinRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy file với id: " + id));
-            tepTinRepository.deleteById(id);
-            
-        } catch (IOException e) {
-            throw new RuntimeException("Lỗi khi xóa file: " + e.getMessage());
-        }
+        tepTinRepository.deleteById(id);
     }
     
     public List<TepTinResponseDto> searchFiles(String keyword, String loaiTep) {
