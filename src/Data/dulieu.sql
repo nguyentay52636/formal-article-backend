@@ -42,7 +42,7 @@ INSERT IGNORE INTO `bai_viet` (`id`, `danh_muc_id`, `tac_gia_id`, `duong_dan`, `
 (5, 5, 3, 'cong-nghe-ai-2025', 'Công nghệ AI và xu hướng 2025', 'Tổng quan về công nghệ AI và xu hướng phát triển.', '<h1>Công nghệ AI 2025</h1><p>Xu hướng và ứng dụng của AI...</p>', 'xuat_ban', '2025-01-01 10:00:00', 5, '{"tags":["ai","cong-nghe"],"priority":"high"}', '2025-01-01 10:00:00', NULL);
 
 -- 6. Bảng tep_tin (phụ thuộc vào nguoi_dung)
-INSERT IGNORE INTO `tep_tin` (`id`, `nguoi_tai_id`, `loai`, `dinh_dang`, `ten_tap_tin`, `kich_thuoc`, `duong_dan_luu`, `chieu_rong`, `chieu_cao`, `ngay_tao`) VALUES
+INSERT IGNORE INTO `tep_tin` (`id`, `nguoi_tai_id`, `loai`, `dinh_dang`, `ten`, `kich_thuoc`, `duong_dan_luu`, `chieu_rong`, `chieu_cao`, `ngay_tao`) VALUES
 (1, 1, 'anh', 'image/jpeg', 'anh_dai_dien_1.jpg', 204800, '/uploads/anh_dai_dien_1.jpg', 800, 600, '2025-01-01 10:00:00'),
 (2, 2, 'tai_lieu', 'application/pdf', 'cv_mau.pdf', 512000, '/uploads/cv_mau.pdf', NULL, NULL, '2025-01-01 10:00:00'),
 (3, 3, 'anh', 'image/png', 'banner_thoi_su.png', 153600, '/uploads/banner_thoi_su.png', 1200, 400, '2025-01-01 10:00:00'),

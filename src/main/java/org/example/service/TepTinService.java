@@ -101,7 +101,7 @@ public class TepTinService {
             tepTin.setLoaiTep(loaiTep != null ? loaiTep : determineFileType(fileExtension));
             tepTin.setTenTapTin(uniqueFilename);
             tepTin.setDinhDang(fileExtension);
-            tepTin.setKichThuoc(file.getSize());
+            tepTin.setKichThuoc(Long.valueOf(file.getSize()));
             tepTin.setDuongDanLuu(filePath.toString());
             tepTin.setMoTa(moTa);
             tepTin.setNguoiTao(nguoiTao);
@@ -111,8 +111,8 @@ public class TepTinService {
             if (isImageFile(fileExtension)) {
                 // For now, set default dimensions. In real implementation, 
                 // you would use image processing libraries to get actual dimensions
-                tepTin.setChieuRong(800);
-                tepTin.setChieuCao(600);
+                tepTin.setChieuRong(Integer.valueOf(800));
+                tepTin.setChieuCao(Integer.valueOf(600));
             }
             
             TepTin savedTepTin = tepTinRepository.save(tepTin);
@@ -202,18 +202,13 @@ public class TepTinService {
         TepTin updatedTepTin = tepTinRepository.save(tepTin);
         return tepTinMapper.toResponseDTO(updatedTepTin);
     }
-    
+
+    //xóa IOException do các lệnh ở dưới không xảy ra lỗi này
     public void deleteFile(Long id) {
-     
-        
-        try {
-               TepTin tepTin = tepTinRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy file với id: " + id));
-            tepTinRepository.deleteById(id);
-            
-        } catch (IOException e) {
-            throw new RuntimeException("Lỗi khi xóa file: " + e.getMessage());
-        }
+        TepTin tepTin = tepTinRepository.findById(id)
+         .orElseThrow(() -> new RuntimeException("Không tìm thấy file với id: " + id));
+        tepTinRepository.deleteById(id);
+
     }
     
     public List<TepTinResponseDto> searchFiles(String keyword, String loaiTep) {

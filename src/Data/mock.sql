@@ -19,6 +19,7 @@ SET time_zone = "+00:00";
 
 --
 -- Cơ sở dữ liệu: `hoso`
+-- CREATE database hoso
 --
 
 -- --------------------------------------------------------
@@ -89,7 +90,9 @@ CREATE TABLE `binh_luan` (
   `trang_thai` varchar(255) DEFAULT NULL,
   `bai_viet_id` bigint(20) NOT NULL,
   `binh_luan_cha_id` bigint(20) DEFAULT NULL,
-  `nguoi_dung_id` bigint(20) NOT NULL
+  `nguoi_dung_id` bigint(20) NOT NULL,
+  `ten_khach` varchar(120) DEFAULT NULL,
+  `email_khach` varchar(160) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -561,6 +564,8 @@ ALTER TABLE `binh_luan`
 ALTER TABLE `nguoi_dung`
   ADD CONSTRAINT `FKa5oibkto18llfdid5w4mv4v47` FOREIGN KEY (`vai_tro_id`) REFERENCES `vai_tro` (`id`),
   ADD CONSTRAINT `FKsh64al4h4m2d4d6sumfsb1yyg` FOREIGN KEY (`anh_dai_dien_id`) REFERENCES `tep_tin` (`id`);
+ALTER TABLE `nguoi_dung`
+ADD COLUMN `kich_hoat` TINYINT(1) NOT NULL DEFAULT 1 AFTER `vai_tro_id`;
 
 --
 -- Các ràng buộc cho bảng `phan_ung`
