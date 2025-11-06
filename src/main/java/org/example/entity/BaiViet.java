@@ -1,11 +1,7 @@
 package org.example.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -23,7 +19,7 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "taiLieuDaLuus"})
 @ToString(exclude = {"danhMuc", "tacGia", "binhLuans", "phanUngs", "thes", "tepTins", "taiLieuDaLuus"})
 public class BaiViet {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

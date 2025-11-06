@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+@Data // là bao gồm cả Getter và Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthRequest {
