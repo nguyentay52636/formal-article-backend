@@ -1,17 +1,149 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 10, 2025 lúc 10:13 AM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+SET NAMES utf8mb4;
 
+-- -----------------------------------------------------
+-- 1. user
+-- -----------------------------------------------------
 
+CREATE TABLE user (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(150),
+    avatar_id BIGINT,
+    active TINYINT(1) DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (avatar_id) REFERENCES file_upload(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- 2. file_upload
+-- -----------------------------------------------------
+
+CREATE TABLE file_upload (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    type ENUM('image','document','other') NOT NULL,
+    mime_type VARCHAR(100),
+    file_name VARCHAR(255),
+    path VARCHAR(500),
+    size INT,
+    width INT,
+    height INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- 3. tag
+-- -----------------------------------------------------
+
+CREATE TABLE tag (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    slug VARCHAR(150) UNIQUE NOT NULL,
+    name VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- 4. template
+-- -----------------------------------------------------
+
+CREATE TABLE template (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    slug VARCHAR(200) UNIQUE NOT NULL,
+    summary VARCHAR(300),
+
+    html LONGTEXT,
+    css LONGTEXT,
+
+    preview_image_id BIGINT,
+    tag_id BIGINT,
+
+    views BIGINT NOT NULL DEFAULT 0,
+    downloads BIGINT NOT NULL DEFAULT 0,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (preview_image_id) REFERENCES file_upload(id),
+    FOREIGN KEY (tag_id) REFERENCES tag(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- 5. generated_cv
+-- -----------------------------------------------------
+
+CREATE TABLE generated_cv (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    template_id BIGINT NOT NULL,
+
+    data_json LONGTEXT NOT NULL CHECK (JSON_VALID(data_json)),
+    style_json LONGTEXT NOT NULL CHECK (JSON_VALID(style_json)),
+
+    html_output LONGTEXT,
+    pdf_file_id BIGINT,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (template_id) REFERENCES template(id),
+    FOREIGN KEY (pdf_file_id) REFERENCES file_upload(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- 6. favourite_cv
+-- -----------------------------------------------------
+
+CREATE TABLE favourite_cv (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    template_id BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, template_id),
+
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- 7. comment
+-- -----------------------------------------------------
+
+CREATE TABLE comment (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    template_id BIGINT NOT NULL,
+    user_id BIGINT,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -----------------------------------------------------
+-- 8. rating
+-- -----------------------------------------------------
+
+CREATE TABLE rating (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    template_id BIGINT NOT NULL,
+    user_id BIGINT,
+    score TINYINT NOT NULL CHECK (score BETWEEN 1 AND 5),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (template_id, user_id),
+
+    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+<<<<<<< HEAD
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -648,8 +780,6 @@ ALTER TABLE `tep_tin`
 --
 ALTER TABLE `thong_ke_bai_viet`
   ADD CONSTRAINT `thong_ke_bai_viet_ibfk_1` FOREIGN KEY (`bai_viet_id`) REFERENCES `bai_viet` (`id`) ON DELETE CASCADE;
+=======
+>>>>>>> acb48ad (update :restore)
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
