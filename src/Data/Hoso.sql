@@ -265,5 +265,20 @@ CREATE TABLE rating (
 INSERT INTO rating (id, template_id, user_id, score, created_at)
 VALUES
 (1, 1, 1, 5, NOW());
+CREATE TABLE role (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(150) UNIQUE NOT NULL,
+    description VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO role (id, name, description, created_at, updated_at)
+VALUES
+(1, 'ADMIN', 'Quản trị hệ thống', NOW(), NOW()),
+(2, 'USER', 'Người dùng', NOW(), NOW());
+
+
 
 COMMIT;
+
