@@ -3,268 +3,9 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 SET NAMES utf8mb4;
 
--- =====================================================
--- 1. file_upload phải đặt trước vì nhiều bảng tham chiếu
--- =====================================================
-
-CREATE TABLE file_upload (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT,
-    type ENUM('image','document','other') NOT NULL,
-    mime_type VARCHAR(100),
-    file_name VARCHAR(255),
-    path VARCHAR(500),
-    size INT,
-    width INT,
-    height INT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO file_upload (id, user_id, type, mime_type, file_name, path, size, width, height, created_at)
-VALUES
-(1, NULL, 'image', 'image/png', 'avatar1.png', '/uploads/avatars/avatar1.png', 204800, 400, 400, NOW()),
-(2, NULL, 'image', 'image/png', 'template-blue.png', '/uploads/templates/template-blue.png', 350000, 800, 1200, NOW()),
-(3, NULL, 'document', 'application/pdf', 'cv_1.pdf', '/uploads/pdf/cv_1.pdf', 550000, NULL, NULL, NOW());
-
--- =====================================================
--- 2. user
--- =====================================================
-
-CREATE TABLE user (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    full_name VARCHAR(150),
-    avatar_id BIGINT,
-    active TINYINT(1) DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (avatar_id) REFERENCES file_upload(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO user (id, email, password, full_name, avatar_id, active, created_at)
-VALUES
-(1, 'thanhnguyen@gmail.com', '$2a$10$testpasswordhash', 'Nguyễn Thanh', 1, 1, NOW());
-
--- Cập nhật user_id cho file_upload sau khi có user
-UPDATE file_upload SET user_id = 1 WHERE id IN (1,2,3);
-
--- =====================================================
--- 3. tag (nhóm CV)
--- =====================================================
-
-CREATE TABLE tag (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    slug VARCHAR(150) UNIQUE NOT NULL,
-    name VARCHAR(150) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO tag (id, slug, name)
-VALUES
-(1, 'sinh-vien', 'Sinh viên'),
-(2, 'it', 'Công nghệ thông tin'),
-(3, 'kinh-doanh', 'Kinh doanh');
-
--- =====================================================
--- 4. template
--- =====================================================
-
-CREATE TABLE template (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(200) NOT NULL,
-    slug VARCHAR(200) UNIQUE NOT NULL,
-    summary VARCHAR(300),
-
-    html LONGTEXT,
-    css LONGTEXT,
-
-    preview_image_id BIGINT,
-    tag_id BIGINT,
-
-    views BIGINT NOT NULL DEFAULT 0,
-    downloads BIGINT NOT NULL DEFAULT 0,
-
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (preview_image_id) REFERENCES file_upload(id),
-    FOREIGN KEY (tag_id) REFERENCES tag(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO template (id, name, slug, summary, html, css, preview_image_id, tag_id, views, downloads, created_at)
-VALUES
-(1, 'Mẫu CV Xanh Chuyên Nghiệp', 'cv-xanh-chuyen-nghiep',
- 'CV phù hợp cho các vị trí văn phòng và Fresher',
- '<div>{{content}}</div>',
- 'body { font-family: Roboto; }',
- 2, 2, 1234, 567, NOW());
-
--- =====================================================
--- 5. generated_cv
--- =====================================================
-
-CREATE TABLE generated_cv (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    template_id BIGINT NOT NULL,
-
-    data_json LONGTEXT NOT NULL CHECK (JSON_VALID(data_json)),
-    style_json LONGTEXT NOT NULL CHECK (JSON_VALID(style_json)),
-
-    html_output LONGTEXT,
-    pdf_file_id BIGINT,
-
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (template_id) REFERENCES template(id),
-    FOREIGN KEY (pdf_file_id) REFERENCES file_upload(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO generated_cv (
-    id, user_id, template_id,
-    data_json, style_json,
-    html_output, pdf_file_id,
-    created_at, updated_at
-)
-VALUES
-(
-1, 1, 1,
-'{
-  "profile": {
-    "full_name": "Nguyễn Thanh",
-    "job_title": "Developer",
-    "gender": "Male",
-    "birthday": "2000-05-12",
-    "phone": "0799356819",
-    "email": "phamthanhdenho@gmail.com",
-    "address": "TP.HCM",
-    "avatar_id": 1
-  },
-  "objective": "Mong muốn làm việc trong môi trường chuyên nghiệp để phát triển bản thân.",
-
-  "education": [
-    {
-      "school": "ĐH Công Nghệ",
-      "faculty": "Công nghệ thông tin",
-      "certificate": "Cử nhân CNTT",
-      "training": "Kỹ thuật phần mềm",
-      "classification": "Giỏi",
-      "start_month": "08",
-      "start_year": "2018",
-      "end_month": "06",
-      "end_year": "2022",
-      "description": "Hoàn thành đồ án tốt nghiệp xuất sắc."
-    }
-  ],
-
-  "experience": [
-    {
-      "company": "Công ty ABC",
-      "position": "Assistant Data Analyst",
-      "start_month": "03",
-      "start_year": "2022",
-      "end_month": "05",
-      "end_year": "2023",
-      "description": [
-        "Phân tích dữ liệu hỗ trợ quyết định kinh doanh.",
-        "Sử dụng SQL, Python (Pandas, NumPy) và Excel.",
-        "Chuẩn hóa dữ liệu và xây dựng báo cáo trực quan."
-      ]
-    }
-  ],
-
-  "skills": [
-    { "name": "Management skill", "level": 4 },
-    { "name": "Communication skill", "level": 5 },
-    { "name": "Problem solving", "level": 4 }
-  ],
-
-  "computer_skills": [
-    { "name": "MS Word", "level": 5 }
-  ],
-
-  "languages": [
-    { "name": "English", "level": 4 }
-  ],
-
-  "hobbies": "Đọc sách, nghe nhạc",
-
-  "references": [
-    {
-      "name": "Nguyễn Văn A",
-      "company": "Công ty B",
-      "phone": "0900111222"
-    }
-  ]
-}',
-'{
-  "color": "#205dac",
-  "font": "Roboto",
-  "layout": "layout-1"
-}',
-NULL, 3, NOW(), NOW()
-);
-
--- =====================================================
--- 6. favourite_cv
--- =====================================================
-
-CREATE TABLE favourite_cv (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    template_id BIGINT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, template_id),
-
-    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO favourite_cv (id, user_id, template_id, created_at)
-VALUES
-(1, 1, 1, NOW());
-
--- =====================================================
--- 7. comment
--- =====================================================
-
-CREATE TABLE comment (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    template_id BIGINT NOT NULL,
-    user_id BIGINT,
-    content TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES user(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO comment (id, template_id, user_id, content, created_at)
-VALUES
-(1, 1, 1, 'Mẫu CV rất đẹp và chuyên nghiệp!', NOW());
-
--- =====================================================
--- 8. rating
--- =====================================================
-
-CREATE TABLE rating (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    template_id BIGINT NOT NULL,
-    user_id BIGINT,
-    score TINYINT NOT NULL CHECK (score BETWEEN 1 AND 5),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    UNIQUE (template_id, user_id),
-
-    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES user(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO rating (id, template_id, user_id, score, created_at)
-VALUES
-(1, 1, 1, 5, NOW());
+-- ======================================
+-- 1. ROLE
+-- ======================================
 CREATE TABLE role (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(150) UNIQUE NOT NULL,
@@ -273,12 +14,224 @@ CREATE TABLE role (
     updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO role (id, name, description, created_at, updated_at)
+INSERT INTO role (name, description, created_at, updated_at)
 VALUES
-(1, 'ADMIN', 'Quản trị hệ thống', NOW(), NOW()),
-(2, 'USER', 'Người dùng', NOW(), NOW());
+('ADMIN', 'Quản trị hệ thống', NOW(), NOW()),
+('USER', 'Người dùng bình thường', NOW(), NOW()),
+('EDITOR', 'Quản lý nội dung', NOW(), NOW());
 
 
+-- ======================================
+-- 2. USER
+-- ======================================
+CREATE TABLE user (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    email VARCHAR(150) UNIQUE NOT NULL CHECK (email LIKE '%@gmail.com'),
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(150),
+    phone VARCHAR(10) UNIQUE NOT NULL,
+    avatar VARCHAR(500),
+    active TINYINT(1) DEFAULT 1,
+    role_id BIGINT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES role(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO user (email, password, full_name, phone, avatar, active, role_id, created_at)
+VALUES
+('admin@gmail.com', '$2a$10$pass111', 'Nguyễn Admin', '0900000001', '/uploads/avatars/admin.png', 1, 1, NOW()),
+('user1@gmail.com', '$2a$10$pass222', 'Trần User',   '0900000002', '/uploads/avatars/user1.png', 1, 2, NOW()),
+('editor@gmail.com', '$2a$10$pass333', 'Lê Editor',  '0900000003', '/uploads/avatars/editor.png', 1, 3, NOW());
+
+
+-- ======================================
+-- 3. TAG
+-- ======================================
+CREATE TABLE tag (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    slug VARCHAR(150) UNIQUE NOT NULL,
+    name VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO tag (slug, name)
+VALUES
+('sinh-vien', 'Sinh viên'),
+('it', 'Công nghệ thông tin'),
+('marketing', 'Marketing');
+
+
+-- ======================================
+-- 4. TEMPLATE
+-- ======================================
+CREATE TABLE template (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    slug VARCHAR(200) UNIQUE NOT NULL,
+    summary VARCHAR(300),
+    html LONGTEXT,
+    css LONGTEXT,
+    preview_url VARCHAR(500),
+    tag_id BIGINT,
+    views BIGINT NOT NULL DEFAULT 0,
+    downloads BIGINT NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tag_id) REFERENCES tag(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO template (name, slug, summary, html, css, preview_url, tag_id, views, downloads, created_at)
+VALUES
+('CV Xanh Chuyên Nghiệp', 'cv-xanh', 'CV phù hợp sinh viên IT',
+ '<div>CV</div>', 'body{}', '/uploads/templates/cv1.png', 2, 100, 20, NOW()),
+
+('CV Đơn Giản Trắng', 'cv-trang', 'CV minimal sạch đẹp',
+ '<div>CV2</div>', 'body{}', '/uploads/templates/cv2.png', 1, 350, 78, NOW()),
+
+('CV Marketing Sáng Tạo', 'cv-marketing', 'Phong cách sáng tạo cho Marketing',
+ '<div>CV3</div>', 'body{}', '/uploads/templates/cv3.png', 3, 500, 120, NOW());
+
+
+-- ======================================
+-- 5. GENERATED_CV
+-- ======================================
+CREATE TABLE generated_cv (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    template_id BIGINT NOT NULL,
+    data_json LONGTEXT NOT NULL CHECK (JSON_VALID(data_json)),
+    style_json LONGTEXT NOT NULL CHECK (JSON_VALID(style_json)),
+    html_output LONGTEXT,
+    title VARCHAR(200),
+    pdf_url VARCHAR(500),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (template_id) REFERENCES template(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO generated_cv (user_id, template_id, data_json, style_json, title, pdf_url, created_at)
+VALUES
+(1, 1, '{"name":"Admin"}',  '{"color":"blue"}',   'CV Admin',  '/uploads/pdf/cv_admin.pdf', NOW()),
+(2, 2, '{"name":"User"}',   '{"color":"black"}',  'CV User',   '/uploads/pdf/cv_user.pdf', NOW()),
+(3, 3, '{"name":"Editor"}', '{"color":"orange"}', 'CV Editor', '/uploads/pdf/cv_editor.pdf', NOW());
+
+
+-- ======================================
+-- 6. FAVOURITE_CV
+-- ======================================
+CREATE TABLE favourite_cv (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    template_id BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, template_id),
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO favourite_cv (user_id, template_id, created_at)
+VALUES
+(1, 1, NOW()),
+(2, 1, NOW()),
+(2, 3, NOW());
+
+
+-- ======================================
+-- 7. COMMENT (CÓ REPLY)
+-- ======================================
+CREATE TABLE comment (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    template_id BIGINT NOT NULL,
+    user_id BIGINT,
+    content TEXT NOT NULL,
+    parent_id BIGINT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_id) REFERENCES comment(id) ON DELETE CASCADE,
+    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO comment (template_id, user_id, content, parent_id, created_at)
+VALUES
+(1, 1, 'CV rất đẹp!', NULL, NOW()),
+(2, 2, 'Minimal mà sang!', NULL, NOW()),
+(3, 3, 'Phù hợp ngành Marketing!', NULL, NOW()),
+(1, 2, 'Tôi đồng ý!', 1, NOW()); -- reply comment id=1
+
+
+-- ======================================
+-- 8. RATING
+-- ======================================
+CREATE TABLE rating (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    template_id BIGINT NOT NULL,
+    user_id BIGINT,
+    score TINYINT NOT NULL CHECK (score BETWEEN 1 AND 5),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (template_id, user_id),
+    FOREIGN KEY (template_id) REFERENCES template(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO rating (template_id, user_id, score, created_at)
+VALUES
+(1, 1, 5, NOW()),
+(2, 2, 4, NOW()),
+(3, 3, 5, NOW());
+
+
+-- ======================================
+-- 9. HISTORY LOG
+-- ======================================
+CREATE TABLE history_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    target_type VARCHAR(100) NOT NULL,
+    target_id BIGINT NOT NULL,
+    description VARCHAR(500),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- ======================================
+-- 10. AI_CHAT_HISTORY
+-- ======================================
+CREATE TABLE ai_chat_history (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    message TEXT NOT NULL,
+    sender ENUM('user', 'ai') NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO ai_chat_history (user_id, message, sender, created_at)
+VALUES
+(1, 'Gợi ý cách cải thiện CV cho admin?', 'user', NOW()),
+(1, 'Bạn có thể thêm phần kỹ năng quản lý và kinh nghiệm lãnh đạo.', 'ai', NOW()),
+(2, 'Làm thế nào để CV IT nổi bật?', 'user', NOW()),
+(2, 'Sử dụng template xanh chuyên nghiệp và nhấn mạnh dự án cá nhân.', 'ai', NOW());
+
+-- ======================================
+-- 11. ADMIN_CHAT_HISTORY
+-- ======================================
+CREATE TABLE admin_chat_history (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    admin_id BIGINT NOT NULL,
+    message TEXT NOT NULL,
+    sender ENUM('user', 'admin') NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES user(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO admin_chat_history (user_id, admin_id, message, sender, created_at)
+VALUES
+(2, 1, 'Admin ơi, giúp tôi với template CV xanh.', 'user', NOW()),
+(2, 1, 'Chào bạn, bạn cần chỉnh sửa phần nào?', 'admin', NOW()),
+(3, 1, 'Tôi không thể tải PDF, lỗi gì vậy?', 'user', NOW()),
+(3, 1, 'Kiểm tra lại kết nối, hoặc thử template khác.', 'admin', NOW());
 
 COMMIT;
-
