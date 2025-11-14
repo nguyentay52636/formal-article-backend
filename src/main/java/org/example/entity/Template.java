@@ -22,8 +22,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"previewImage", "tag", "generatedCvs", "favouriteCvs", "comments", "ratings"})
-@ToString(exclude = {"previewImage", "tag", "generatedCvs", "favouriteCvs", "comments", "ratings"})
+@EqualsAndHashCode(exclude = {"tag", "generatedCvs", "favouriteCvs", "comments", "ratings"})
+@ToString(exclude = {"tag", "generatedCvs", "favouriteCvs", "comments", "ratings"})
 public class Template {
     
     @Id
@@ -46,9 +46,8 @@ public class Template {
     @Column(name = "css", columnDefinition = "LONGTEXT")
     private String css;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "preview_image_id")
-    private FileUpload previewImage;
+    @Column(name = "preview_url", length = 500)
+    private String previewUrl;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")

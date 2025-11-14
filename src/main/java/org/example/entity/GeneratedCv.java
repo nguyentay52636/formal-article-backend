@@ -20,8 +20,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"user", "template", "pdfFile"})
-@ToString(exclude = {"user", "template", "pdfFile"})
+@EqualsAndHashCode(exclude = {"user", "template"})
+@ToString(exclude = {"user", "template"})
 public class GeneratedCv {
     
     @Id
@@ -46,9 +46,11 @@ public class GeneratedCv {
     @Column(name = "html_output", columnDefinition = "LONGTEXT")
     private String htmlOutput;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pdf_file_id")
-    private FileUpload pdfFile;
+    @Column(name = "title", length = 200)
+    private String title;
+    
+    @Column(name = "pdf_url", length = 500)
+    private String pdfUrl;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

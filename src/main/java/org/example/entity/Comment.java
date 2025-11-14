@@ -9,6 +9,8 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entity cho bảng comment
@@ -19,8 +21,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"template", "user"})
-@ToString(exclude = {"template", "user"})
+@EqualsAndHashCode(exclude = {"template", "user", "parent", "replies"})
+@ToString(exclude = {"template", "user", "parent", "replies"})
 public class Comment {
     
     @Id
@@ -38,6 +40,13 @@ public class Comment {
     
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
+    
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Comment> replies = new ArrayList<>();
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

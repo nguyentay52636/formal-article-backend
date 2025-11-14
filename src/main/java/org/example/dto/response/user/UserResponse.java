@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.dto.response.file.FileUploadResponse;
+import org.example.dto.response.role.RoleResponse;
 
 import java.time.LocalDateTime;
 
@@ -21,10 +21,14 @@ public class UserResponse {
     private String email;
 
     private String fullName;
-    
-    private FileUploadResponse avatar;
+
+    private String phone;
+
+    private String avatar;
 
     private Boolean active;
+
+    private RoleResponse role;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;

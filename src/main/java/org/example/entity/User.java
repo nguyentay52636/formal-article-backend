@@ -24,8 +24,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"avatar", "fileUploads", "generatedCvs", "favouriteCvs", "comments", "ratings"})
-@ToString(exclude = {"avatar", "fileUploads", "generatedCvs", "favouriteCvs", "comments", "ratings"})
+@EqualsAndHashCode(exclude = {"role", "fileUploads", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin"})
+@ToString(exclude = {"role", "fileUploads", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin"})
 public class User {
     
     @Id
@@ -43,13 +43,18 @@ public class User {
     @Column(name = "full_name", length = 150)
     private String fullName;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "avatar_id")
-    @JsonIgnore
-    private FileUpload avatar;
+    @Column(name = "phone", nullable = false, unique = true, length = 10)
+    private String phone;
     
-    @Column(name = "active", nullable = false, columnDefinition = "TINYINT(1)")
+    @Column(name = "avatar", length = 500)
+    private String avatar;
+    
+    @Column(name = "active", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
     private Boolean active = true;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -85,4 +90,24 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Rating> ratings = new ArrayList<>();
+    
+    // Relationships - các history log của user
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<HistoryLog> historyLogs = new ArrayList<>();
+    
+    // Relationships - các AI chat history của user (cascade ALL vì ON DELETE CASCADE trong SQL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<AiChatHistory> aiChatHistories = new ArrayList<>();
+    
+    // Relationships - các admin chat history với user này (cascade ALL vì ON DELETE CASCADE trong SQL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<AdminChatHistory> adminChatHistoriesAsUser = new ArrayList<>();
+    
+    // Relationships - các admin chat history với admin này (cascade ALL vì ON DELETE CASCADE trong SQL)
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<AdminChatHistory> adminChatHistoriesAsAdmin = new ArrayList<>();
 }

@@ -1,6 +1,9 @@
 package org.example.controller;
 
-import org.example.entity.User;
+import jakarta.validation.Valid;
+import org.example.dto.request.user.UserCreateRequest;
+import org.example.dto.request.user.UserUpdateRequest;
+import org.example.dto.response.user.UserResponse;
 import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Controller xử lý các API liên quan đến User
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -20,17 +25,13 @@ public class UserController {
     /**
      * Tạo user mới
      * POST /api/users
-     * Body: { "email": "test@example.com", "password": "123456", "fullName": "Nguyễn Văn A" }
+     * Body: UserCreateRequest
      */
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateRequest request) {
         try {
-            User user = userService.createUser(
-                request.getEmail(),
-                request.getPassword(),
-                request.getFullName()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+            UserResponse response = userService.createUser(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -41,8 +42,8 @@ public class UserController {
      * GET /api/users
      */
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userService.getAllUsersResponse();
         return ResponseEntity.ok(users);
     }
     
@@ -51,10 +52,13 @@ public class UserController {
      * GET /api/users/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        Optional<User> user = userService.getUserById(id);
-        return user.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        UserResponse user = userService.getUserResponseById(id);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
     
     /**
@@ -62,11 +66,10 @@ public class UserController {
      * PUT /api/users/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user) {
-        user.setId(id);
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest request) {
         try {
-            User updatedUser = userService.updateUser(user);
-            return ResponseEntity.ok(updatedUser);
+            UserResponse response = userService.updateUser(id, request);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -78,25 +81,12 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
-    
-    // Inner class cho request body
-    public static class CreateUserRequest {
-        private String email;
-        private String password;
-        private String fullName;
-        
-        // Getters and Setters
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-        
-        public String getFullName() { return fullName; }
-        public void setFullName(String fullName) { this.fullName = fullName; }
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
 

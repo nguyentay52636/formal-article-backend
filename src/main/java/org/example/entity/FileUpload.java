@@ -21,8 +21,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"user", "usersWithAvatar", "templates", "generatedCvs"})
-@ToString(exclude = {"user", "usersWithAvatar", "templates", "generatedCvs"})
+@EqualsAndHashCode(exclude = {"user"})
+@ToString(exclude = {"user"})
 public class FileUpload {
     
     @Id
@@ -59,18 +59,6 @@ public class FileUpload {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
-    // Relationships - các User sử dụng file này làm avatar
-    @OneToMany(mappedBy = "avatar", fetch = FetchType.LAZY)
-    private List<User> usersWithAvatar = new ArrayList<>();
-    
-    // Relationships - các Template sử dụng file này làm preview image
-    @OneToMany(mappedBy = "previewImage", fetch = FetchType.LAZY)
-    private List<Template> templates = new ArrayList<>();
-    
-    // Relationships - các GeneratedCv sử dụng file này làm PDF
-    @OneToMany(mappedBy = "pdfFile", fetch = FetchType.LAZY)
-    private List<GeneratedCv> generatedCvs = new ArrayList<>();
     
     public enum FileType {
         image, document, other
