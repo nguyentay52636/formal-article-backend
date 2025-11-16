@@ -1,5 +1,10 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.dto.request.user.UserCreateRequest;
 import org.example.dto.request.user.UserUpdateRequest;
@@ -12,22 +17,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controller xử lý các API liên quan đến User
- */
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "Người dùng (User)", description = "API quản lý người dùng (User) trong hệ thống")
+
 public class UserController {
-    
     @Autowired
     private UserService userService;
-    
-    /**
-     * Tạo user mới
-     * POST /api/users
-     * Body: UserCreateRequest
-     */
     @PostMapping
+    @Operation(summary = "Tạo người dùng mới", description = "Tạo một người dùng mới trong hệ thống")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Người dùng đã được tạo thành công"),
+        @ApiResponse(responseCode = "400", description = "Dữ liệu không hợp lệ hoặc tên người dùng đã tồn tại")
+    })
     public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateRequest request) {
         try {
             UserResponse response = userService.createUser(request);

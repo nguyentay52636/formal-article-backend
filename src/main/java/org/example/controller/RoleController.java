@@ -16,21 +16,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controller xử lý các API endpoints cho Role
- */
 @RestController
 @RequestMapping("/api/roles")
-@Tag(name = "Role Management", description = "API quản lý vai trò (Role) trong hệ thống")
+@Tag(name = "Vai trò (Role)", description = "API quản lý vai trò (Role) trong hệ thống")
 public class RoleController {
     
     @Autowired
     private RoleService roleService;
-    
-    /**
-     * Lấy role theo ID
-     * GET /api/roles/{id}
-     */
     @GetMapping("/{id}")
     @Operation(summary = "Lấy role theo ID", description = "Trả về thông tin chi tiết của role dựa trên ID")
     @ApiResponses(value = {
