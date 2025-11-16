@@ -233,5 +233,45 @@ VALUES
 (2, 1, 'Chào bạn, bạn cần chỉnh sửa phần nào?', 'admin', NOW()),
 (3, 1, 'Tôi không thể tải PDF, lỗi gì vậy?', 'user', NOW()),
 (3, 1, 'Kiểm tra lại kết nối, hoặc thử template khác.', 'admin', NOW());
+-- ======================================
+-- 12. CHAT_ROOM (WebSocket Chat Rooms)
+-- ======================================
+CREATE TABLE chat_room (
+    id VARCHAR(100) PRIMARY KEY,
+    type ENUM('user-admin', 'user-ai') NOT NULL,
+    user_id BIGINT NOT NULL, 
+    admin_id BIGINT DEFAULT NULL,
+    ai_enabled TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES user(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ======================================
+-- 13. CHAT_MESSAGE (WebSocket Messages)
+-- ======================================
+CREATE TABLE chat_message (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    room_id VARCHAR(100) NOT NULL,
+    sender_id BIGINT NULL,
+    sender_type ENUM('user','admin','ai') NOT NULL DEFAULT 'user',
+    content TEXT,
+    type ENUM('text','image','video','audio','file') DEFAULT 'text',
+    file_url VARCHAR(500),
+    file_size BIGINT,
+    file_mime VARCHAR(150),
+    reply_to BIGINT NULL,
+    status ENUM('sent','delivered','seen') DEFAULT 'sent',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES chat_room(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id) REFERENCES user(id) ON DELETE SET NULL,
+    FOREIGN KEY (reply_to) REFERENCES chat_message(id) ON DELETE SET NULL,
+    INDEX idx_room_id (room_id),
+    INDEX idx_sender_id (sender_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 
 COMMIT;

@@ -24,8 +24,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"role", "fileUploads", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin"})
-@ToString(exclude = {"role", "fileUploads", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin"})
+@EqualsAndHashCode(exclude = {"role", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin", "chatRoomsAsUser", "chatRoomsAsAdmin", "chatMessages"})
+@ToString(exclude = {"role", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin", "chatRoomsAsUser", "chatRoomsAsAdmin", "chatMessages"})
 public class User {
     
     @Id
@@ -66,11 +66,6 @@ public class User {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
     
-    // Relationships - các file upload của user
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<FileUpload> fileUploads = new ArrayList<>();
-    
     // Relationships - các CV đã tạo (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
@@ -110,4 +105,19 @@ public class User {
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<AdminChatHistory> adminChatHistoriesAsAdmin = new ArrayList<>();
+    
+    // Relationships - các chat room mà user này là chủ (cascade ALL vì ON DELETE CASCADE trong SQL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ChatRoom> chatRoomsAsUser = new ArrayList<>();
+    
+    // Relationships - các chat room mà user này là admin (ON DELETE SET NULL trong SQL, không cascade)
+    @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ChatRoom> chatRoomsAsAdmin = new ArrayList<>();
+    
+    // Relationships - các chat message mà user này gửi (ON DELETE SET NULL trong SQL, không cascade)
+    @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ChatMessage> chatMessages = new ArrayList<>();
 }
