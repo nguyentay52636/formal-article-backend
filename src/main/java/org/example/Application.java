@@ -8,10 +8,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
-@EnableWebMvc
-@ComponentScan(basePackages = "org.example")
-@EntityScan("org.example.entity")
-@EnableJpaRepositories("org.example.repository")
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

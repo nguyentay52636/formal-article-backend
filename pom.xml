@@ -175,6 +175,12 @@
             <artifactId>spqr</artifactId>
             <version>0.12.2</version>
         </dependency>
+        <!-- GraphiQL UI -->
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>graphiql</artifactId>
+    <version>0.11.11</version>
+</dependency>
     </dependencies>
 
 
