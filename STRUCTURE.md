@@ -54,4 +54,6 @@ src/
 | Naming conventions | 9/10 | ✅ Hợp lý |
 | Configuration files | 10/10 | ✅ Đầy đủ |
 
-**Tổng điểm: 47/50** ⭐⭐⭐⭐⭐
+Frontend → Query GraphQL → Spring Boot (/graphql)
+→ GraphQL Engine → Resolver/Service → Repository → MySQL
+→ Trả JSON theo schema
