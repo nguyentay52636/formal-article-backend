@@ -89,7 +89,11 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-amqp</artifactId>
 </dependency>
-
+<!-- grapql -->
+ <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-graphql</artifactId>
+        </dependency>
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -165,7 +169,12 @@
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version>
         </dependency>
-
+        <!-- GraphQL SPQR -->
+        <dependency>
+            <groupId>io.leangen.graphql</groupId>
+            <artifactId>spqr</artifactId>
+            <version>0.12.2</version>
+        </dependency>
     </dependencies>
 
 
@@ -207,6 +216,17 @@
                         </exclude>
                     </excludes>
                     <mainClass>org.example.Application</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- Code Generator Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>org.example.generator.CodeGenerator</mainClass>
+                    <classpathScope>compile</classpathScope>
                 </configuration>
             </plugin>
         </plugins>

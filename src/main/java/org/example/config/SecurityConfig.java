@@ -52,6 +52,8 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/webjars/**").permitAll()
                 // API endpoints
                 .requestMatchers("/api/**").permitAll()
+                // GraphQL endpoints
+                .requestMatchers("/graphql/**", "/graphiql/**").permitAll()
                 // Allow everything else
                 .anyRequest().permitAll()
             );
