@@ -17,22 +17,29 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Auth", description = "API quản lý đăng nhập và đăng ký")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/login")
+    @Operation(summary = "Đăng nhập", description = "Đăng nhập vào hệ thống")
+    @ApiResponse(responseCode = "200", description = "Đăng nhập thành công")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthLoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Đăng ký", description = "Đăng ký tài khoản mới")
+    @ApiResponse(responseCode = "200", description = "Đăng ký thành công")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/forgot-password")
+    @Operation(summary = "Quên mật khẩu", description = "Quên mật khẩu và gửi email để đặt lại mật khẩu")
+    @ApiResponse(responseCode = "200", description = "Quên mật khẩu thành công")
     public ResponseEntity<Map<String, String>> forgotPassword(
             @Valid @RequestBody AuthForgotPasswordRequest request) {
         authService.forgotPassword(request);
