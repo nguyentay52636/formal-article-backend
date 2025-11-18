@@ -19,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/roles")
 @Tag(name = "Vai trò (Role)", description = "API quản lý vai trò (Role) trong hệ thống")
+@RequiredArgsConstructor
 public class RoleController {
     
     @Autowired
