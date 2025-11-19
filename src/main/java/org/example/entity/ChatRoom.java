@@ -33,7 +33,7 @@ public class ChatRoom {
     private String id;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 20)
+    @Column(name = "room_type", nullable = false, length = 50)
     private RoomType type;
     
     @ManyToOne(fetch = FetchType.LAZY)

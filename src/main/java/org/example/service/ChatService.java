@@ -139,4 +139,51 @@ public class ChatService {
         response.setCreatedAt(message.getCreatedAt());
         return response;
     }
+
+    // RoomChat CRUD
+    @Transactional
+    public ChatRoom createRoom(org.example.dto.request.roomChat.CreateRoomRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        User admin = userRepository.findById(request.getAdminId())
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        ChatRoom room = new ChatRoom();
+        room.setId(UUID.randomUUID().toString());
+        room.setUser(user);
+        room.setAdmin(admin);
+        try {
+            room.setType(ChatRoom.RoomType.valueOf(request.getRoomType()));
+        } catch (IllegalArgumentException e) {
+            room.setType(ChatRoom.RoomType.user_admin);
+        }
+        room.setAiEnabled(false);
+        return chatRoomRepository.save(room);
+    }
+
+    @Transactional(readOnly = true)
+    public ChatRoom getRoomById(String id) {
+        return chatRoomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getAllRooms() {
+        return chatRoomRepository.findAll();
+    }
+
+    @Transactional
+    public ChatRoom updateRoom(String id, org.example.dto.request.roomChat.UpdateRoomRequest request) {
+        ChatRoom room = getRoomById(id);
+        if (request.getAiEnabled() != null) {
+            room.setAiEnabled(request.getAiEnabled());
+        }
+        return chatRoomRepository.save(room);
+    }
+
+    @Transactional
+    public void deleteRoom(String id) {
+        ChatRoom room = getRoomById(id);
+        chatRoomRepository.delete(room);
+    }
 }

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.request.chat.ChatMessageRequest;
 import org.example.dto.response.chat.ChatMessageResponse;
+import org.example.dto.response.chat.ChatRoomResponse;
 import org.example.entity.ChatRoom;
 import org.example.service.ChatService;
 import org.springframework.http.ResponseEntity;
@@ -27,16 +28,32 @@ public class ChatController {
 
     private final ChatService chatService;
 
+
+    @GetMapping("/version")
+    public ResponseEntity<String> getVersion() {
+        return ResponseEntity.ok("v2-room_type");
+    }
+
     @PostMapping("/rooms")
     @Operation(summary = "Tạo hoặc lấy phòng chat", description = "Tạo phòng chat mới hoặc lấy phòng chat hiện có giữa user và admin")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Thành công"),
         @ApiResponse(responseCode = "404", description = "User hoặc Admin không tồn tại")
     })
-    public ResponseEntity<ChatRoom> getOrCreateRoom(
+    public ResponseEntity<ChatRoomResponse> getOrCreateRoom(
             @Parameter(description = "ID của User", required = true) @RequestParam Long userId,
             @Parameter(description = "ID của Admin", required = true) @RequestParam Long adminId) {
-        return ResponseEntity.ok(chatService.getOrCreateChatRoom(userId, adminId));
+        ChatRoom room = chatService.getOrCreateChatRoom(userId, adminId);
+        ChatRoomResponse response = ChatRoomResponse.builder()
+                .id(room.getId())
+                .type(room.getType().name())
+                .userId(room.getUser().getId())
+                .adminId(room.getAdmin() != null ? room.getAdmin().getId() : null)
+                .aiEnabled(room.getAiEnabled())
+                .createdAt(room.getCreatedAt())
+                .updatedAt(room.getUpdatedAt())
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/rooms/{roomId}/messages")
