@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Auth", description = "API quản lý đăng nhập và đăng ký")
