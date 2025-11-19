@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat WebSocket Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 45%;
+        }
+
+        #messages {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #eee;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        .log {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Chat WebSocket Test</h2>
+
+    <div class="container">
+        <div class="box">
+            <h3>1. Connection & Room</h3>
+            <div>
+                <label>User ID: <input type="text" id="userId" value="2"></label><br>
+                <label>Admin ID: <input type="text" id="adminId" value="1"></label><br>
+                <button onclick="createRoom()">Get/Create Room</button>
+            </div>
+            <div id="roomInfo" style="margin-top: 10px; font-weight: bold;"></div>
+
+            <hr>
+
+            <h3>2. WebSocket</h3>
+            <div>
+                <button onclick="connect()" id="btnConnect" disabled>Connect WebSocket</button>
+                <button onclick="disconnect()" id="btnDisconnect" disabled>Disconnect</button>
+            </div>
+            <div id="status" style="margin-top: 5px;">Status: Disconnected</div>
+        </div>
+
+        <div class="box">
+            <h3>3. Chat</h3>
+            <div id="messages"></div>
+            <div>
+                <label>Sender ID: <input type="text" id="senderId" value="1"></label><br>
+                <input type="text" id="messageContent" placeholder="Type a message..." style="width: 70%;">
+                <button onclick="sendMessage()" id="btnSend" disabled>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="box" style="width: 95%; margin-top: 20px;">
+        <h3>Admin Notifications</h3>
+        <div id="notifications" class="log"></div>
+    </div>
+
+    <script>
+        var stompClient = null;
+        var currentRoomId = null;
+
+        function log(msg) {
+            console.log(msg);
+        }
+
+        function notify(msg) {
+            var notifications = document.getElementById('notifications');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.appendChild(document.createTextNode(msg));
+            notifications.appendChild(p);
+        }
+
+        async function createRoom() {
+            var userId = document.getElementById('userId').value;
+            var adminId = document.getElementById('adminId').value;
+
+            try {
+                const response = await fetch(`/api/chat/rooms?userId=${userId}&adminId=${adminId}`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Server error (${response.status}): ${text}`);
+                }
+
+                const room = await response.json();
+                currentRoomId = room.id;
+                document.getElementById('roomInfo').innerText = 'Room ID: ' + currentRoomId;
+                document.getElementById('btnConnect').disabled = false;
+                log('Room created/retrieved: ' + currentRoomId);
+
+                // Load history
+                loadHistory(currentRoomId);
+            } catch (error) {
+                alert('Error creating room: ' + error);
+                log('Error creating room: ' + error);
+            }
+        }
+
+        async function loadHistory(roomId) {
+            try {
+                const response = await fetch(`/api/chat/rooms/${roomId}/messages`);
+                const messages = await response.json();
+                var messageArea = document.getElementById('messages');
+                messageArea.innerHTML = '';
+                messages.forEach(msg => showMessage(msg));
+            } catch (error) {
+                log('Error loading history: ' + error);
+            }
+        }
+
+        function connect() {
+            var socket = new SockJS('/ws/chat');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                document.getElementById('status').innerText = 'Status: Connected';
+                document.getElementById('btnConnect').disabled = true;
+                document.getElementById('btnDisconnect').disabled = false;
+                document.getElementById('btnSend').disabled = false;
+                log('Connected: ' + frame);
+
+                // Subscribe to chat room
+                if (currentRoomId) {
+                    stompClient.subscribe('/topic/chat/' + currentRoomId, function (message) {
+                        showMessage(JSON.parse(message.body));
+                    });
+
+                    // Also subscribe to update/delete events if needed
+                    stompClient.subscribe('/topic/chat/' + currentRoomId + '/update', function (message) {
+                        log('Update received: ' + message.body);
+                        // Reload history for simplicity
+                        loadHistory(currentRoomId);
+                    });
+
+                    stompClient.subscribe('/topic/chat/' + currentRoomId + '/delete', function (message) {
+                        log('Delete received: ' + message.body);
+                        // Reload history for simplicity
+                        loadHistory(currentRoomId);
+                    });
+                }
+
+                // Subscribe to admin notifications
+                stompClient.subscribe('/topic/admin/notifications', function (message) {
+                    notify(new Date().toLocaleTimeString() + ': ' + message.body);
+                });
+
+            }, function (error) {
+                document.getElementById('status').innerText = 'Status: Error ' + error;
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            document.getElementById('status').innerText = 'Status: Disconnected';
+            document.getElementById('btnConnect').disabled = false;
+            document.getElementById('btnDisconnect').disabled = true;
+            document.getElementById('btnSend').disabled = true;
+            log("Disconnected");
+        }
+
+        function sendMessage() {
+            var content = document.getElementById('messageContent').value;
+            var senderId = document.getElementById('senderId').value;
+
+            if (content && stompClient && currentRoomId) {
+                var chatMessage = {
+                    senderId: senderId,
+                    content: content,
+                    type: 'text'
+                };
+
+                stompClient.send("/app/chat/" + currentRoomId + "/sendMessage", {}, JSON.stringify(chatMessage));
+                document.getElementById('messageContent').value = '';
+            }
+        }
+
+        function showMessage(message) {
+            var messageArea = document.getElementById('messages');
+            var p = document.createElement('div');
+            p.style.marginBottom = '5px';
+            p.style.padding = '5px';
+            p.style.background = '#f9f9f9';
+            p.innerHTML = `<strong>${message.senderType} (${message.senderId}):</strong> ${message.content} <span style="font-size: 0.8em; color: #999;">${message.createdAt}</span>`;
+            messageArea.appendChild(p);
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
