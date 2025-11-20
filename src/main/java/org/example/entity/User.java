@@ -24,8 +24,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"role", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin", "chatRoomsAsUser", "chatRoomsAsAdmin", "chatMessages"})
-@ToString(exclude = {"role", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin", "chatRoomsAsUser", "chatRoomsAsAdmin", "chatMessages"})
+@EqualsAndHashCode(exclude = {"role", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin", "chatRoomsAsUser", "chatRoomsAsAdmin", "chatMessages", "notifications"})
+@ToString(exclude = {"role", "generatedCvs", "favouriteCvs", "comments", "ratings", "historyLogs", "aiChatHistories", "adminChatHistoriesAsUser", "adminChatHistoriesAsAdmin", "chatRoomsAsUser", "chatRoomsAsAdmin", "chatMessages", "notifications"})
 public class User {
     
     @Id
@@ -120,4 +120,9 @@ public class User {
     @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ChatMessage> chatMessages = new ArrayList<>();
+    
+    // Relationships - các notification mà user này nhận (cascade ALL vì ON DELETE CASCADE trong SQL)
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Notification> notifications = new ArrayList<>();
 }

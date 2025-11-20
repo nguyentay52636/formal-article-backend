@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class ChatRoomResponse {
     private String id;
     private String type;
+    private String status;
     private Long userId;
     private Long adminId;
     private Boolean aiEnabled;

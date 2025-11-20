@@ -280,29 +280,24 @@ CREATE TABLE chat_message (
     INDEX idx_sender_id (sender_id),
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ======================================
+-- 14. NOTIFICATION
+-- ======================================
 CREATE TABLE notification (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
     receiver_id BIGINT NOT NULL,
-
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
-
     type ENUM('chat_message', 'system', 'info') NOT NULL DEFAULT 'system',
-
     room_id VARCHAR(100) DEFAULT NULL,
-
     is_read TINYINT(1) DEFAULT 0,
     read_at DATETIME DEFAULT NULL,
-
     metadata JSON DEFAULT NULL,
-
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-
     FOREIGN KEY (receiver_id) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES chat_room(id) ON DELETE CASCADE,
-
     INDEX idx_receiver (receiver_id),
     INDEX idx_room_id (room_id),
     INDEX idx_is_read (is_read)

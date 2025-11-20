@@ -20,12 +20,17 @@ import java.util.List;
  * Lưu trữ các phòng chat (WebSocket Chat Rooms)
  */
 @Entity
-@Table(name = "chat_room")
+@Table(name = "chat_room",
+       indexes = {
+           @Index(name = "idx_user_id", columnList = "user_id"),
+           @Index(name = "idx_admin_id", columnList = "admin_id"),
+           @Index(name = "idx_status", columnList = "status")
+       })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"user", "admin", "messages"})
-@ToString(exclude = {"user", "admin", "messages"})
+@EqualsAndHashCode(exclude = {"user", "admin", "messages", "notifications"})
+@ToString(exclude = {"user", "admin", "messages", "notifications"})
 public class ChatRoom {
     
     @Id
@@ -33,7 +38,7 @@ public class ChatRoom {
     private String id;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "room_type", nullable = false, length = 50)
+    @Column(name = "room_type", nullable = false)
     private RoomType type;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,6 +48,7 @@ public class ChatRoom {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id")
+    
     @JsonIgnore
     private User admin;
     
@@ -50,7 +56,7 @@ public class ChatRoom {
     private Boolean aiEnabled = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false)
     private RoomStatus status = RoomStatus.pending;
 
     public enum RoomStatus {
@@ -71,6 +77,11 @@ public class ChatRoom {
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ChatMessage> messages = new ArrayList<>();
+    
+    // Relationships - các notification liên quan đến room này (cascade ALL vì ON DELETE CASCADE trong SQL)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Notification> notifications = new ArrayList<>();
     
     public enum RoomType {
         user_admin, user_ai

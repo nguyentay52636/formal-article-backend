@@ -12,7 +12,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "notification")
+@Table(name = "notification",
+       indexes = {
+           @Index(name = "idx_receiver", columnList = "receiver_id"),
+           @Index(name = "idx_room_id", columnList = "room_id"),
+           @Index(name = "idx_is_read", columnList = "is_read")
+       })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,14 +32,14 @@ public class Notification {
     @JsonIgnore
     private User receiver;
 
-    @Column(nullable = false)
+    @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "message", columnDefinition = "TEXT", nullable = false)
     private String message;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "type", nullable = false)
     private NotificationType type = NotificationType.system;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,7 +53,7 @@ public class Notification {
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
-    @Column(columnDefinition = "JSON")
+    @Column(name = "metadata", columnDefinition = "JSON")
     private String metadata;
 
     @CreationTimestamp
