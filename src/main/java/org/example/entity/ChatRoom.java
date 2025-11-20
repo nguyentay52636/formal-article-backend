@@ -48,6 +48,14 @@ public class ChatRoom {
     
     @Column(name = "ai_enabled", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private Boolean aiEnabled = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private RoomStatus status = RoomStatus.pending;
+
+    public enum RoomStatus {
+        pending, active, closed, timeout
+    }
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

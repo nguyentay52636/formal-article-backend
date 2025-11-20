@@ -18,7 +18,10 @@ INSERT INTO role (name, description, created_at, updated_at)
 VALUES
 ('ADMIN', 'Quản trị hệ thống', NOW(), NOW()),
 ('USER', 'Người dùng bình thường', NOW(), NOW()),
-('EDITOR', 'Quản lý nội dung', NOW(), NOW());
+('EDITOR', 'Quản lý nội dung', NOW(), NOW()),
+('CONSULTANT', 'Tư vấn viên', NOW(), NOW());
+
+
 
 
 -- ======================================
@@ -42,7 +45,8 @@ INSERT INTO user (email, password, full_name, phone, avatar, active, role_id, cr
 VALUES
 ('admin@gmail.com', '$2a$10$pass111', 'Nguyễn Admin', '0900000001', '/uploads/avatars/admin.png', 1, 1, NOW()),
 ('user1@gmail.com', '$2a$10$pass222', 'Trần User',   '0900000002', '/uploads/avatars/user1.png', 1, 2, NOW()),
-('editor@gmail.com', '$2a$10$pass333', 'Lê Editor',  '0900000003', '/uploads/avatars/editor.png', 1, 3, NOW());
+('editor@gmail.com', '$2a$10$pass333', 'Lê Editor',  '0900000003', '/uploads/avatars/editor.png', 1, 3, NOW()),
+('consultant@gmail.com', '$2a$10$pass444', 'Lê Consultant',  '0900000004', '/uploads/avatars/consultant.png', 1, 4, NOW());
 
 
 -- ======================================
@@ -237,16 +241,21 @@ VALUES
 -- 12. CHAT_ROOM (WebSocket Chat Rooms)
 -- ======================================
 CREATE TABLE chat_room (
-    id VARCHAR(100) PRIMARY KEY,
-    type ENUM('user-admin', 'user-ai') NOT NULL,
-    user_id BIGINT NOT NULL, 
-    admin_id BIGINT DEFAULT NULL,
-    ai_enabled TINYINT(1) DEFAULT 0,
+    id VARCHAR(100) PRIMARY KEY,                            
+    room_type ENUM('user_admin', 'user_ai') NOT NULL,           
+    status ENUM('pending', 'active', 'closed', 'timeout') NOT NULL DEFAULT 'pending',                     
+    user_id BIGINT NOT NULL,                                
+    admin_id BIGINT DEFAULT NULL,                           
+    ai_enabled TINYINT(1) DEFAULT 0,                        
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
-    FOREIGN KEY (admin_id) REFERENCES user(id) ON DELETE SET NULL
+    FOREIGN KEY (admin_id) REFERENCES user(id) ON DELETE SET NULL,
+    INDEX idx_user_id (user_id),
+    INDEX idx_admin_id (admin_id),
+    INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- ======================================
 -- 13. CHAT_MESSAGE (WebSocket Messages)
@@ -271,6 +280,34 @@ CREATE TABLE chat_message (
     INDEX idx_sender_id (sender_id),
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE notification (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    receiver_id BIGINT NOT NULL,
+
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+
+    type ENUM('chat_message', 'system', 'info') NOT NULL DEFAULT 'system',
+
+    room_id VARCHAR(100) DEFAULT NULL,
+
+    is_read TINYINT(1) DEFAULT 0,
+    read_at DATETIME DEFAULT NULL,
+
+    metadata JSON DEFAULT NULL,
+
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (receiver_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES chat_room(id) ON DELETE CASCADE,
+
+    INDEX idx_receiver (receiver_id),
+    INDEX idx_room_id (room_id),
+    INDEX idx_is_read (is_read)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 
 

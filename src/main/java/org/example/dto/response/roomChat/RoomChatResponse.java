@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class RoomChatResponse {
     private String id;
     private String roomType;
+    private String status;
     private Long userId;
     private Long adminId;
     private Boolean aiEnabled;
