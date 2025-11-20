@@ -14,6 +14,7 @@ public class RoomChatMapper {
         return RoomChatResponse.builder()
                 .id(room.getId())
                 .roomType(room.getType().name())
+                .status(room.getStatus().name())
                 .userId(room.getUser().getId())
                 .adminId(room.getAdmin() != null ? room.getAdmin().getId() : null)
                 .aiEnabled(room.getAiEnabled())

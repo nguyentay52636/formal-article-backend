@@ -158,6 +158,7 @@ public class ChatService {
             room.setType(ChatRoom.RoomType.user_admin);
         }
         room.setAiEnabled(false);
+        room.setStatus(ChatRoom.RoomStatus.pending);
         return chatRoomRepository.save(room);
     }
 
