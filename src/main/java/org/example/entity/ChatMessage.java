@@ -43,14 +43,14 @@ public class ChatMessage {
     private User sender;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "sender_type", nullable = false, length = 10, columnDefinition = "ENUM('user','admin','ai') DEFAULT 'user'")
+    @Column(name = "sender_type", nullable = false)
     private SenderType senderType = SenderType.user;
     
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", length = 10, columnDefinition = "ENUM('text','image','video','audio','file') DEFAULT 'text'")
+    @Column(name = "type")
     private MessageType type = MessageType.text;
     
     @Column(name = "file_url", length = 500)
@@ -68,7 +68,7 @@ public class ChatMessage {
     private ChatMessage replyTo;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 10, columnDefinition = "ENUM('sent','delivered','seen') DEFAULT 'sent'")
+    @Column(name = "status")
     private MessageStatus status = MessageStatus.sent;
     
     @CreationTimestamp

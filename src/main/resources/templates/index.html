@@ -2,104 +2,562 @@
 <html>
 
 <head>
-    <title>Chat WebSocket Test</title>
+    <title>Chat WebSocket Test - User & Admin</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
         }
 
-        .container {
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .role-selector {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 2px solid #e9ecef;
+            text-align: center;
+        }
+
+        .role-selector label {
+            margin: 0 15px;
+            font-weight: 600;
+        }
+
+        .role-selector input[type="radio"] {
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        .content {
             display: flex;
-            gap: 20px;
+            gap: 0;
         }
 
-        .box {
-            border: 1px solid #ccc;
-            padding: 10px;
-            width: 45%;
+        .sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 16px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
         }
 
         #messages {
-            height: 300px;
-            overflow-y: scroll;
-            border: 1px solid #eee;
-            margin-bottom: 10px;
-            padding: 5px;
+            flex: 1;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
         }
 
-        .log {
-            font-family: monospace;
+        .message-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-user {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+
+        .message-admin {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+
+        .message-ai {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px 5px 5px 0;
+            cursor: pointer;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        button.btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+        }
+
+        button.btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+
+        .room-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+        }
+
+        .room-info strong {
+            color: #1976D2;
+        }
+
+        .notification-log {
+            font-family: 'Courier New', monospace;
             font-size: 12px;
-            color: #666;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            background: #f8f9fa;
+        }
+
+        .notification-log p {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .pending-room {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .pending-room small {
+            color: #856404;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .badge-pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge-active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .badge-closed {
+            background: #f44336;
+            color: white;
+        }
+
+        .message-input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .message-input-container input {
+            flex: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 15px;
+            opacity: 0.3;
         }
     </style>
 </head>
 
 <body>
-    <h2>Chat WebSocket Test</h2>
-
-    <div class="container">
-        <div class="box">
-            <h3>1. Connection & Room</h3>
-            <div>
-                <label>User ID: <input type="text" id="userId" value="2"></label><br>
-                <label>Admin ID: <input type="text" id="adminId" value="1"></label><br>
-                <button onclick="createRoom()">Get/Create Room</button>
-            </div>
-            <div id="roomInfo" style="margin-top: 10px; font-weight: bold;"></div>
-
-            <hr>
-
-            <h3>2. WebSocket</h3>
-            <div>
-                <button onclick="connect()" id="btnConnect" disabled>Connect WebSocket</button>
-                <button onclick="disconnect()" id="btnDisconnect" disabled>Disconnect</button>
-            </div>
-            <div id="status" style="margin-top: 5px;">Status: Disconnected</div>
+    <div class="main-container">
+        <div class="header">
+            <h1>🚀 WebSocket Chat Test System</h1>
+            <p>Test real-time chat between User and Admin with room approval flow</p>
         </div>
 
-        <div class="box">
-            <h3>3. Chat</h3>
-            <div id="messages"></div>
-            <div>
-                <label>Sender ID: <input type="text" id="senderId" value="1"></label><br>
-                <input type="text" id="messageContent" placeholder="Type a message..." style="width: 70%;">
-                <button onclick="sendMessage()" id="btnSend" disabled>Send</button>
+        <div class="role-selector">
+            <label>
+                <input type="radio" name="roleSelect" value="USER" checked onchange="switchRole(this.value)">
+                👤 USER Mode (ID: 2)
+            </label>
+            <label>
+                <input type="radio" name="roleSelect" value="ADMIN" onchange="switchRole(this.value)">
+                👨‍💼 ADMIN Mode (ID: 1)
+            </label>
+            <label>
+                <input type="radio" name="roleSelect" value="CUSTOM" onchange="switchRole(this.value)">
+                ⚙️ Custom ID
+            </label>
+            <span id="customIdInput" style="display: none;">
+                <input type="number" id="customUserId" placeholder="Enter User ID"
+                    style="width: 120px; margin-left: 10px;">
+            </span>
+        </div>
+
+        <div class="content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="section">
+                    <h3>📋 Current User Info</h3>
+                    <div id="currentUserInfo">
+                        <strong>Role:</strong> <span id="currentRole">USER</span><br>
+                        <strong>User ID:</strong> <span id="currentUserId">2</span>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🏠 Room Actions</h3>
+
+                    <!-- USER: Create Room -->
+                    <div id="userActions">
+                        <div class="input-group">
+                            <label>Initial Message (optional):</label>
+                            <textarea id="initialMessage" placeholder="Xin chào, tôi cần hỗ trợ..." rows="2"></textarea>
+                        </div>
+                        <button onclick="createRoom()" class="btn-success" style="width: 100%;">
+                            ➕ Create Chat Request
+                        </button>
+                    </div>
+
+                    <!-- ADMIN: Pending Rooms -->
+                    <div id="adminActions" style="display: none;">
+                        <button onclick="loadPendingRooms()" class="btn-secondary" style="width: 100%;">
+                            🔄 Refresh Pending Rooms
+                        </button>
+                        <div id="pendingRoomsList" style="margin-top: 15px;"></div>
+                    </div>
+
+                    <!-- Join Room by ID -->
+                    <div style="margin-top: 20px;">
+                        <div class="input-group">
+                            <label>Join Room by ID:</label>
+                            <input type="text" id="joinRoomId" placeholder="Enter Room ID">
+                        </div>
+                        <button onclick="joinRoomById()" style="width: 100%;">
+                            🚪 Join Room
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🌐 WebSocket Connection</h3>
+                    <div id="wsStatus" class="status disconnected">
+                        ❌ Disconnected
+                    </div>
+                    <button onclick="connectManually()" id="btnConnect">🔌 Connect</button>
+                    <button onclick="disconnect()" id="btnDisconnect" disabled class="btn-danger">🔴 Disconnect</button>
+                    <small style="display: block; margin-top: 5px; color: #666;">
+                        💡 Connect before creating/joining room
+                    </small>
+                </div>
+
+                <div class="section">
+                    <h3>📬 Notifications</h3>
+                    <div id="notifications" class="notification-log"></div>
+                    <button onclick="clearNotifications()" class="btn-secondary" style="width: 100%; margin-top: 10px;">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <div id="roomInfo" class="room-info" style="display: none;">
+                    <strong>Room ID:</strong> <span id="roomIdDisplay">-</span>
+                    <span id="roomStatusBadge" class="badge badge-pending">PENDING</span><br>
+                    <strong>User ID:</strong> <span id="roomUserDisplay">-</span><br>
+                    <strong>Admin ID:</strong> <span id="roomAdminDisplay">-</span><br>
+                    <div id="roomActions" style="margin-top: 10px;"></div>
+                </div>
+
+                <div class="section" style="flex: 1; display: flex; flex-direction: column;">
+                    <h3>💬 Chat Messages</h3>
+                    <div id="messages">
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <p>No messages yet. Create or join a room to start chatting!</p>
+                        </div>
+                    </div>
+
+                    <div class="message-input-container">
+                        <input type="text" id="messageContent" placeholder="Type your message..."
+                            onkeypress="if(event.key === 'Enter') sendMessage();" disabled>
+                        <button onclick="sendMessage()" id="btnSend" disabled>📤 Send</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-
-    <div class="box" style="width: 95%; margin-top: 20px;">
-        <h3>Admin Notifications</h3>
-        <div id="notifications" class="log"></div>
     </div>
 
     <script>
         var stompClient = null;
         var currentRoomId = null;
+        var currentUserRole = 'USER';
+        var currentUserId = 2;
+        var currentAdminId = 1; // Default admin ID for approvals
+        var subscribedRooms = new Set(); // Track subscribed rooms to avoid duplicates
+        var activeSubscriptions = {}; // Track active subscriptions to unsubscribe when needed
 
         function log(msg) {
-            console.log(msg);
+            console.log('[LOG]', msg);
         }
 
-        function notify(msg) {
+        function notify(msg, type = 'info') {
             var notifications = document.getElementById('notifications');
             var p = document.createElement('p');
             p.style.wordWrap = 'break-word';
-            p.appendChild(document.createTextNode(msg));
-            notifications.appendChild(p);
+
+            // Add timestamp
+            var time = new Date().toLocaleTimeString();
+            var prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+
+            p.innerHTML = `<span style="color: #999;">[${time}]</span> ${prefix} ${escapeHtml(msg)}`;
+            notifications.insertBefore(p, notifications.firstChild);
+
+            // Keep only last 50 notifications
+            while (notifications.children.length > 50) {
+                notifications.removeChild(notifications.lastChild);
+            }
         }
 
+        function clearNotifications() {
+            document.getElementById('notifications').innerHTML = '';
+            notify('Notifications cleared', 'success');
+        }
+
+        function switchRole(role) {
+            var oldUserId = currentUserId;
+            var oldRole = currentUserRole;
+
+            if (role === 'USER') {
+                currentUserRole = 'USER';
+                currentUserId = 2;
+                document.getElementById('customIdInput').style.display = 'none';
+                document.getElementById('userActions').style.display = 'block';
+                document.getElementById('adminActions').style.display = 'none';
+            } else if (role === 'ADMIN') {
+                currentUserRole = 'ADMIN';
+                currentUserId = 1;
+                currentAdminId = 1;
+                document.getElementById('customIdInput').style.display = 'none';
+                document.getElementById('userActions').style.display = 'none';
+                document.getElementById('adminActions').style.display = 'block';
+                // Auto load pending rooms for admin
+                setTimeout(() => loadPendingRooms(), 500);
+            } else if (role === 'CUSTOM') {
+                document.getElementById('customIdInput').style.display = 'inline';
+                document.getElementById('userActions').style.display = 'block';
+                document.getElementById('adminActions').style.display = 'none';
+                var customId = document.getElementById('customUserId').value;
+                if (customId) {
+                    currentUserId = parseInt(customId);
+                    currentUserRole = customId == 1 ? 'ADMIN' : 'USER';
+                }
+            }
+
+            document.getElementById('currentRole').textContent = currentUserRole;
+            document.getElementById('currentUserId').textContent = currentUserId;
+
+            notify(`Switched to ${currentUserRole} mode (ID: ${currentUserId})`, 'success');
+
+            // If WebSocket is connected and user/role changed, re-subscribe to new topics
+            if (stompClient && stompClient.connected && (oldUserId !== currentUserId || oldRole !== currentUserRole)) {
+                log('Re-subscribing to topics for new role/user...');
+                resubscribeToTopics();
+            }
+        }
+
+        // Update custom user ID
+        document.addEventListener('DOMContentLoaded', function () {
+            var customInput = document.getElementById('customUserId');
+            if (customInput) {
+                customInput.addEventListener('change', function () {
+                    currentUserId = parseInt(this.value) || 2;
+                    currentUserRole = currentUserId == 1 ? 'ADMIN' : 'USER';
+                    document.getElementById('currentRole').textContent = currentUserRole;
+                    document.getElementById('currentUserId').textContent = currentUserId;
+                });
+            }
+        });
+
         async function createRoom() {
-            var userId = document.getElementById('userId').value;
-            var adminId = document.getElementById('adminId').value;
+            var initialMessage = document.getElementById('initialMessage').value;
 
             try {
-                const response = await fetch(`/api/chat/rooms?userId=${userId}&adminId=${adminId}`, {
-                    method: 'POST'
+                notify('Creating chat room request...', 'info');
+
+                const response = await fetch('/api/room-chats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUserId,
+                        roomType: 'user_admin',
+                        initialMessage: initialMessage || null
+                    })
                 });
 
                 if (!response.ok) {
@@ -109,110 +567,557 @@
 
                 const room = await response.json();
                 currentRoomId = room.id;
-                document.getElementById('roomInfo').innerText = 'Room ID: ' + currentRoomId;
-                document.getElementById('btnConnect').disabled = false;
-                log('Room created/retrieved: ' + currentRoomId);
 
-                // Load history
-                loadHistory(currentRoomId);
+                displayRoomInfo(room);
+                notify(`Room created successfully! Room ID: ${room.id}`, 'success');
+
+                // Connect to WebSocket if not connected, then subscribe to room
+                if (!stompClient || !stompClient.connected) {
+                    connect();
+                } else {
+                    // Already connected, just subscribe to new room
+                    subscribeToRoom(currentRoomId);
+                }
+
+                if (room.status === 'pending') {
+                    notify('⏳ Waiting for admin to approve...', 'info');
+                    updateWsStatus('Waiting for approval...', 'pending');
+                } else if (room.status === 'active') {
+                    loadHistory(room.id);
+                    enableChat();
+                }
+
             } catch (error) {
-                alert('Error creating room: ' + error);
+                notify('Error creating room: ' + error.message, 'error');
                 log('Error creating room: ' + error);
             }
         }
 
-        async function loadHistory(roomId) {
+        async function loadPendingRooms() {
             try {
-                const response = await fetch(`/api/chat/rooms/${roomId}/messages`);
-                const messages = await response.json();
-                var messageArea = document.getElementById('messages');
-                messageArea.innerHTML = '';
-                messages.forEach(msg => showMessage(msg));
+                notify('Loading pending rooms...', 'info');
+
+                const response = await fetch('/api/room-chats/pending');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const rooms = await response.json();
+                var listDiv = document.getElementById('pendingRoomsList');
+                listDiv.innerHTML = '';
+
+                if (rooms.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No pending rooms</p>';
+                    notify('No pending rooms found', 'info');
+                } else {
+                    notify(`Found ${rooms.length} pending room(s)`, 'success');
+                    rooms.forEach(room => {
+                        var roomDiv = document.createElement('div');
+                        roomDiv.className = 'pending-room';
+                        roomDiv.innerHTML = `
+                            <strong>Room: ${room.id.substring(0, 8)}...</strong>
+                            <small>User ID: ${room.userId}</small>
+                            <small>Created: ${new Date(room.createdAt).toLocaleString()}</small>
+                            <button onclick="approveRoom('${room.id}')" class="btn-success" style="width: 100%; margin-top: 8px;">
+                                ✓ Approve & Join
+                            </button>
+                        `;
+                        listDiv.appendChild(roomDiv);
+                    });
+                }
             } catch (error) {
-                log('Error loading history: ' + error);
+                notify('Error loading pending rooms: ' + error.message, 'error');
+                log('Error: ' + error);
             }
         }
 
+        function displayRoomInfo(room) {
+            document.getElementById('roomInfo').style.display = 'block';
+            document.getElementById('roomIdDisplay').textContent = room.id;
+            document.getElementById('roomUserDisplay').textContent = room.userId || '-';
+            document.getElementById('roomAdminDisplay').textContent = room.adminId || 'Waiting...';
+
+            var badge = document.getElementById('roomStatusBadge');
+            badge.textContent = room.status.toUpperCase();
+            badge.className = 'badge badge-' + room.status;
+
+            // Room actions
+            var actionsDiv = document.getElementById('roomActions');
+            actionsDiv.innerHTML = '';
+
+            if (room.status === 'active') {
+                var closeBtn = document.createElement('button');
+                closeBtn.textContent = '🔒 Close Room';
+                closeBtn.className = 'btn-danger';
+                closeBtn.onclick = function () { closeRoom(room.id); };
+                actionsDiv.appendChild(closeBtn);
+            }
+        }
+
+        function joinRoomById() {
+            var roomId = document.getElementById('joinRoomId').value.trim();
+            if (!roomId) {
+                alert('Please enter a room ID');
+                return;
+            }
+
+            currentRoomId = roomId;
+            notify('Joining room: ' + roomId, 'info');
+
+            // Connect to WebSocket if not connected, then subscribe to room
+            if (!stompClient || !stompClient.connected) {
+                connect();
+            } else {
+                // Already connected, subscribe to this room
+                subscribeToRoom(currentRoomId);
+            }
+
+            loadRoomDetails(roomId);
+        }
+
+        async function loadRoomDetails(roomId) {
+            try {
+                const response = await fetch(`/api/room-chats/${roomId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const room = await response.json();
+                displayRoomInfo(room);
+
+                if (room.status === 'active') {
+                    loadHistory(roomId);
+                    enableChat();
+                } else {
+                    notify(`Room is ${room.status}. Waiting...`, 'info');
+                }
+            } catch (error) {
+                notify('Error loading room: ' + error.message, 'error');
+            }
+        }
+
+        async function approveRoom(roomId) {
+            try {
+                notify('Approving room...', 'info');
+
+                const response = await fetch(`/api/room-chats/${roomId}/approve?adminId=${currentAdminId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const approvedRoom = await response.json();
+                    log("Room approved: " + JSON.stringify(approvedRoom));
+
+                    currentRoomId = roomId;
+                    displayRoomInfo(approvedRoom);
+                    notify('✅ Room approved successfully!', 'success');
+
+                    // Connect to WebSocket if not connected, then subscribe to room
+                    if (!stompClient || !stompClient.connected) {
+                        connect();
+                    } else {
+                        // Already connected, subscribe to this room
+                        subscribeToRoom(currentRoomId);
+                    }
+
+                    // Enable chat
+                    enableChat();
+                    loadHistory(roomId);
+
+                    // Reload pending list
+                    if (currentUserRole === 'ADMIN') {
+                        setTimeout(() => loadPendingRooms(), 1000);
+                    }
+
+                } else {
+                    const errorText = await response.text();
+                    notify('Failed to approve: ' + errorText, 'error');
+                }
+            } catch (e) {
+                notify('Error approving room: ' + e.message, 'error');
+                log("Error: " + e);
+            }
+        }
+
+        async function closeRoom(roomId) {
+            if (!confirm('Are you sure you want to close this room?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/room-chats/${roomId}/close`, {
+                    method: 'PUT'
+                });
+
+                if (response.ok) {
+                    const closedRoom = await response.json();
+                    displayRoomInfo(closedRoom);
+                    notify('Room closed', 'success');
+                    disableChat();
+                } else {
+                    notify('Failed to close room', 'error');
+                }
+            } catch (e) {
+                notify('Error closing room: ' + e.message, 'error');
+            }
+        }
+
+        function enableChat() {
+            document.getElementById('messageContent').disabled = false;
+            document.getElementById('btnSend').disabled = false;
+            updateWsStatus('Connected & Ready', 'connected');
+        }
+
+        function disableChat() {
+            document.getElementById('messageContent').disabled = true;
+            document.getElementById('btnSend').disabled = true;
+        }
+
+        function updateWsStatus(text, type) {
+            var statusDiv = document.getElementById('wsStatus');
+            statusDiv.textContent = (type === 'connected' ? '✅ ' : type === 'pending' ? '⏳ ' : '❌ ') + text;
+            statusDiv.className = 'status ' + type;
+        }
+
+        async function loadHistory(roomId) {
+            try {
+                log('Loading chat history for room: ' + roomId);
+                const response = await fetch(`/api/chat/rooms/${roomId}/messages`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const messages = await response.json();
+                var messageArea = document.getElementById('messages');
+                messageArea.innerHTML = '';
+
+                if (messages.length === 0) {
+                    messageArea.innerHTML = `
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <p>No messages yet. Start chatting!</p>
+                        </div>
+                    `;
+                    notify('No messages in this room yet', 'info');
+                } else {
+                    messages.forEach(msg => showMessage(msg));
+                    log(`Loaded ${messages.length} messages`);
+                    notify(`Loaded ${messages.length} message(s)`, 'success');
+                }
+            } catch (error) {
+                log('Error loading history: ' + error);
+                notify('Error loading chat history: ' + error.message, 'error');
+                document.getElementById('messages').innerHTML = '<div class="empty-state"><p style="color: red;">Error loading messages</p></div>';
+            }
+        }
+
+        function subscribeToRoom(roomId) {
+            if (!stompClient || !stompClient.connected) {
+                log('Cannot subscribe: WebSocket not connected');
+                return;
+            }
+
+            // Check if already subscribed to this room
+            if (subscribedRooms.has(roomId)) {
+                log('Already subscribed to room: ' + roomId);
+                return;
+            }
+
+            log('Subscribing to room: ' + roomId);
+
+            // Subscribe to chat messages in this room
+            stompClient.subscribe('/topic/chat/' + roomId, function (message) {
+                log('📨 New message received via WebSocket');
+                try {
+                    var msg = JSON.parse(message.body);
+                    showMessage(msg);
+                } catch (e) {
+                    log('Error parsing message: ' + e);
+                }
+            });
+
+            // Subscribe to room status updates
+            stompClient.subscribe('/topic/chat/room/' + roomId + '/status', function (message) {
+                log('📊 Room status update received');
+                try {
+                    var room = JSON.parse(message.body);
+                    displayRoomInfo(room);
+
+                    if (room.status === 'active') {
+                        enableChat();
+                        loadHistory(roomId);
+                        notify('🎉 Room is now ACTIVE! You can start chatting.', 'success');
+                    } else if (room.status === 'closed') {
+                        disableChat();
+                        notify('Room has been closed', 'info');
+                    }
+                } catch (e) {
+                    log('Error parsing room update: ' + e);
+                }
+            });
+
+            // Mark as subscribed
+            subscribedRooms.add(roomId);
+            notify(`✅ Subscribed to room ${roomId.substring(0, 8)}...`, 'success');
+            log(`✓ Successfully subscribed to room ${roomId}`);
+        }
+
+        function subscribeToTopics() {
+            if (!stompClient || !stompClient.connected) {
+                log('Cannot subscribe: WebSocket not connected');
+                return;
+            }
+
+            // Subscribe to room if we have one
+            if (currentRoomId) {
+                subscribeToRoom(currentRoomId);
+            }
+
+            // Subscribe to admin notifications
+            if (currentUserRole === 'ADMIN') {
+                if (activeSubscriptions['adminNotif']) {
+                    activeSubscriptions['adminNotif'].unsubscribe();
+                }
+                activeSubscriptions['adminNotif'] = stompClient.subscribe('/topic/admin/notifications', function (message) {
+                    try {
+                        var notif = JSON.parse(message.body);
+                        var msg = notif.title ? `[${notif.title}] ${notif.message}` : notif.message;
+                        notify('📢 ADMIN: ' + msg, 'info');
+
+                        // Auto refresh pending rooms
+                        if (notif.type === 'chat_message' || notif.title?.includes('Yêu cầu')) {
+                            setTimeout(() => loadPendingRooms(), 1000);
+                        }
+                    } catch (e) {
+                        notify('📢 ADMIN: ' + message.body, 'info');
+                    }
+                });
+                log('Subscribed to admin notifications');
+            }
+
+            // Subscribe to user-specific notifications
+            if (activeSubscriptions['userNotif_' + currentUserId]) {
+                activeSubscriptions['userNotif_' + currentUserId].unsubscribe();
+            }
+            activeSubscriptions['userNotif_' + currentUserId] = stompClient.subscribe('/topic/user/' + currentUserId + '/notifications', function (message) {
+                try {
+                    var notif = JSON.parse(message.body);
+                    var msg = notif.title ? `[${notif.title}] ${notif.message}` : notif.message;
+                    notify('📬 ' + msg, 'success');
+                } catch (e) {
+                    notify('📬 ' + message.body, 'info');
+                }
+            });
+            log('Subscribed to user notifications for ID: ' + currentUserId);
+
+            // Subscribe to user room updates
+            if (activeSubscriptions['roomUpdate_' + currentUserId]) {
+                activeSubscriptions['roomUpdate_' + currentUserId].unsubscribe();
+            }
+            activeSubscriptions['roomUpdate_' + currentUserId] = stompClient.subscribe('/topic/user/' + currentUserId + '/room-updates', function (message) {
+                try {
+                    var room = JSON.parse(message.body);
+                    log('Room update for user: ' + JSON.stringify(room));
+
+                    if (room.id === currentRoomId) {
+                        displayRoomInfo(room);
+
+                        if (room.status === 'active') {
+                            // Subscribe to room for chat messages
+                            subscribeToRoom(room.id);
+                            enableChat();
+                            loadHistory(room.id);
+                            notify('🎉 Admin approved! Room is active, you can chat now!', 'success');
+                        }
+                    }
+                } catch (e) {
+                    log('Error parsing user room update: ' + e);
+                }
+            });
+            log('Subscribed to room updates for user ID: ' + currentUserId);
+        }
+
+        function resubscribeToTopics() {
+            log('Re-subscribing to topics...');
+
+            // Unsubscribe from old topics
+            Object.keys(activeSubscriptions).forEach(key => {
+                if (activeSubscriptions[key] && activeSubscriptions[key].unsubscribe) {
+                    activeSubscriptions[key].unsubscribe();
+                }
+            });
+            activeSubscriptions = {};
+
+            // Subscribe to new topics
+            subscribeToTopics();
+
+            notify('Re-subscribed to topics for current role', 'success');
+        }
+
+        function connectManually() {
+            connect();
+        }
+
         function connect() {
+            if (stompClient !== null && stompClient.connected) {
+                log('Already connected');
+                notify('Already connected to WebSocket', 'info');
+
+                // If we have a room and not subscribed yet, subscribe now
+                if (currentRoomId) {
+                    subscribeToRoom(currentRoomId);
+                }
+                return;
+            }
+
+            log('Connecting to WebSocket...');
+            notify('Connecting to WebSocket...', 'info');
+            updateWsStatus('Connecting...', 'pending');
+
             var socket = new SockJS('/ws/chat');
             stompClient = Stomp.over(socket);
 
+            // Disable debug output (comment out next line to see STOMP frames)
+            stompClient.debug = null;
+
             stompClient.connect({}, function (frame) {
-                document.getElementById('status').innerText = 'Status: Connected';
+                log('✓ WebSocket Connected');
+                notify('WebSocket connected successfully!', 'success');
+
+                updateWsStatus('Connected', 'connected');
                 document.getElementById('btnConnect').disabled = true;
                 document.getElementById('btnDisconnect').disabled = false;
-                document.getElementById('btnSend').disabled = false;
-                log('Connected: ' + frame);
 
-                // Subscribe to chat room
-                if (currentRoomId) {
-                    stompClient.subscribe('/topic/chat/' + currentRoomId, function (message) {
-                        showMessage(JSON.parse(message.body));
-                    });
-
-                    // Also subscribe to update/delete events if needed
-                    stompClient.subscribe('/topic/chat/' + currentRoomId + '/update', function (message) {
-                        log('Update received: ' + message.body);
-                        // Reload history for simplicity
-                        loadHistory(currentRoomId);
-                    });
-
-                    stompClient.subscribe('/topic/chat/' + currentRoomId + '/delete', function (message) {
-                        log('Delete received: ' + message.body);
-                        // Reload history for simplicity
-                        loadHistory(currentRoomId);
-                    });
-                }
-
-                // Subscribe to admin notifications
-                stompClient.subscribe('/topic/admin/notifications', function (message) {
-                    notify(new Date().toLocaleTimeString() + ': ' + message.body);
-                });
+                // Subscribe to all relevant topics
+                subscribeToTopics();
 
             }, function (error) {
-                document.getElementById('status').innerText = 'Status: Error ' + error;
+                log('✗ WebSocket Connection Error: ' + error);
+                notify('WebSocket connection failed: ' + error, 'error');
+                updateWsStatus('Connection Error', 'disconnected');
+                document.getElementById('btnConnect').disabled = false;
             });
         }
 
         function disconnect() {
-            if (stompClient !== null) {
+            if (stompClient !== null && stompClient.connected) {
                 stompClient.disconnect();
+                log("Disconnected from WebSocket");
+                notify('Disconnected from WebSocket', 'info');
             }
-            document.getElementById('status').innerText = 'Status: Disconnected';
+
+            // Clear subscribed rooms tracking
+            subscribedRooms.clear();
+
+            // Clear active subscriptions
+            activeSubscriptions = {};
+
+            updateWsStatus('Disconnected', 'disconnected');
             document.getElementById('btnConnect').disabled = false;
             document.getElementById('btnDisconnect').disabled = true;
-            document.getElementById('btnSend').disabled = true;
-            log("Disconnected");
+            disableChat();
         }
 
         function sendMessage() {
-            var content = document.getElementById('messageContent').value;
-            var senderId = document.getElementById('senderId').value;
+            var content = document.getElementById('messageContent').value.trim();
 
-            if (content && stompClient && currentRoomId) {
+            if (!content) {
+                alert('Please enter a message');
+                return;
+            }
+
+            if (!stompClient || !stompClient.connected) {
+                alert('WebSocket not connected. Please connect first.');
+                return;
+            }
+
+            if (!currentRoomId) {
+                alert('No room selected. Please create or join a room first.');
+                return;
+            }
+
+            try {
                 var chatMessage = {
-                    senderId: senderId,
+                    senderId: currentUserId,
                     content: content,
                     type: 'text'
                 };
 
                 stompClient.send("/app/chat/" + currentRoomId + "/sendMessage", {}, JSON.stringify(chatMessage));
                 document.getElementById('messageContent').value = '';
+                log('Message sent: ' + content);
+            } catch (e) {
+                alert('Error sending message: ' + e);
+                notify('Error sending message: ' + e.message, 'error');
+                log('Error: ' + e);
             }
         }
 
         function showMessage(message) {
             var messageArea = document.getElementById('messages');
-            var p = document.createElement('div');
-            p.style.marginBottom = '5px';
-            p.style.padding = '5px';
-            p.style.background = '#f9f9f9';
-            p.innerHTML = `<strong>${message.senderType} (${message.senderId}):</strong> ${message.content} <span style="font-size: 0.8em; color: #999;">${message.createdAt}</span>`;
-            messageArea.appendChild(p);
+
+            // Remove empty state if exists
+            var emptyState = messageArea.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            var msgDiv = document.createElement('div');
+            msgDiv.className = 'message-item';
+
+            // Different styles for different sender types
+            if (message.senderType === 'admin') {
+                msgDiv.classList.add('message-admin');
+            } else if (message.senderType === 'user') {
+                msgDiv.classList.add('message-user');
+            } else if (message.senderType === 'ai') {
+                msgDiv.classList.add('message-ai');
+            }
+
+            var senderIcon = message.senderType === 'admin' ? '👨‍💼' : message.senderType === 'ai' ? '🤖' : '👤';
+            var senderLabel = message.senderType.toUpperCase();
+            var timeStr = message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : 'now';
+
+            msgDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <strong style="color: #333;">${senderIcon} ${senderLabel}</strong>
+                    <span style="font-size: 0.75em; color: #999;">${timeStr}</span>
+                </div>
+                <div style="color: #000; word-wrap: break-word;">${escapeHtml(message.content)}</div>
+                <div style="font-size: 0.75em; color: #666; margin-top: 3px;">
+                    Sender ID: ${message.senderId} | Status: ${message.status || 'sent'}
+                </div>
+            `;
+
+            messageArea.appendChild(msgDiv);
             messageArea.scrollTop = messageArea.scrollHeight;
         }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function () {
+            notify('Page loaded. Select your role and start testing!', 'success');
+            log('Application initialized');
+
+            // Auto-connect WebSocket on page load
+            setTimeout(() => {
+                notify('Auto-connecting WebSocket...', 'info');
+                connect();
+            }, 500);
+        });
     </script>
 </body>
 
 </html>
-<!-- cập nhập lại socket chat khi user tạo phòng thì mặc định status của room là  pending -->

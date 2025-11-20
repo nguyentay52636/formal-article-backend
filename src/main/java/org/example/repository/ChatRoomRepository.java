@@ -13,4 +13,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
     Optional<ChatRoom> findByUserAndAdmin(User user, User admin);
     List<ChatRoom> findByUser(User user);
     List<ChatRoom> findByAdmin(User admin);
+    List<ChatRoom> findByStatus(ChatRoom.RoomStatus status);
+    List<ChatRoom> findByAdminAndStatus(User admin, ChatRoom.RoomStatus status);
+    List<ChatRoom> findByUserAndStatus(User user, ChatRoom.RoomStatus status);
 }

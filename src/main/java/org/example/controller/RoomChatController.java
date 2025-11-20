@@ -38,6 +38,20 @@ public class RoomChatController {
         return ResponseEntity.ok(roomChatMapper.toResponse(room));
     }
 
+    @PutMapping("/{id}/approve")
+    @Operation(summary = "Duyệt phòng chat", description = "Admin duyệt yêu cầu tạo phòng chat và được assign vào room")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Duyệt thành công"),
+        @ApiResponse(responseCode = "404", description = "Phòng chat không tồn tại"),
+        @ApiResponse(responseCode = "400", description = "Room không ở trạng thái pending hoặc user không phải admin")
+    })
+    public ResponseEntity<RoomChatResponse> approveRoom(
+            @Parameter(description = "ID của phòng chat", required = true) @PathVariable String id,
+            @Parameter(description = "ID của admin đang approve", required = true) @RequestParam Long adminId) {
+        ChatRoom room = chatService.approveRoom(id, adminId);
+        return ResponseEntity.ok(roomChatMapper.toResponse(room));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Lấy thông tin phòng chat", description = "Lấy chi tiết phòng chat theo ID")
     @ApiResponses(value = {
@@ -84,5 +98,65 @@ public class RoomChatController {
             @Parameter(description = "ID của phòng chat", required = true) @PathVariable String id) {
         chatService.deleteRoom(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Lấy danh sách phòng chat của user", description = "Lấy tất cả các phòng chat mà user tham gia")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<RoomChatResponse>> getRoomsByUser(
+            @Parameter(description = "ID của user", required = true) @PathVariable Long userId) {
+        List<ChatRoom> rooms = chatService.getRoomsByUserId(userId);
+        List<RoomChatResponse> responses = rooms.stream()
+                .map(roomChatMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/admin/{adminId}")
+    @Operation(summary = "Lấy danh sách phòng chat của admin", description = "Lấy tất cả các phòng chat mà admin quản lý")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<RoomChatResponse>> getRoomsByAdmin(
+            @Parameter(description = "ID của admin", required = true) @PathVariable Long adminId) {
+        List<ChatRoom> rooms = chatService.getRoomsByAdminId(adminId);
+        List<RoomChatResponse> responses = rooms.stream()
+                .map(roomChatMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/status/{status}")
+    @Operation(summary = "Lấy danh sách phòng chat theo trạng thái", description = "Lấy tất cả các phòng chat có trạng thái cụ thể")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<RoomChatResponse>> getRoomsByStatus(
+            @Parameter(description = "Trạng thái phòng chat (pending/active/closed/timeout)", required = true) 
+            @PathVariable String status) {
+        List<ChatRoom> rooms = chatService.getRoomsByStatus(status);
+        List<RoomChatResponse> responses = rooms.stream()
+                .map(roomChatMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/pending")
+    @Operation(summary = "Lấy danh sách phòng chat đang chờ", description = "Lấy tất cả các phòng chat có trạng thái pending (dành cho admin)")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<RoomChatResponse>> getPendingRooms() {
+        List<ChatRoom> rooms = chatService.getPendingRooms();
+        List<RoomChatResponse> responses = rooms.stream()
+                .map(roomChatMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @PutMapping("/{id}/close")
+    @Operation(summary = "Đóng phòng chat", description = "Đóng phòng chat (chuyển status sang closed)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Đóng thành công"),
+        @ApiResponse(responseCode = "404", description = "Phòng chat không tồn tại")
+    })
+    public ResponseEntity<RoomChatResponse> closeRoom(
+            @Parameter(description = "ID của phòng chat", required = true) @PathVariable String id) {
+        ChatRoom room = chatService.closeRoom(id);
+        return ResponseEntity.ok(roomChatMapper.toResponse(room));
     }
 }

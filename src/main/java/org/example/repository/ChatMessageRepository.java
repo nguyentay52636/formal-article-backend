@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     List<ChatMessage> findByRoomOrderByCreatedAtAsc(ChatRoom room);
+    List<ChatMessage> findByRoomOrderByCreatedAtDesc(ChatRoom room);
+    Long countByRoom(ChatRoom room);
+    List<ChatMessage> findByRoomAndStatus(ChatRoom room, ChatMessage.MessageStatus status);
 }

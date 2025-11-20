@@ -21,14 +21,11 @@ public class WebSocketEventListener {
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        // In a real app, you would get the user from the principal or session attributes
-        // For now, we log the connection and notify admins
         log.info("Received a new web socket connection");
         
-        // Notify admins that a user has connected (you might want to send user details here)
-        // Assuming we send a simple message or object
+        // Notify admins
         messagingTemplate.convertAndSend("/topic/admin/notifications", Map.of(
-            "type", "CONNECT",
+            "title", "System",
             "message", "New user connected"
         ));
     }
@@ -40,8 +37,9 @@ public class WebSocketEventListener {
         
         // Notify admins
         messagingTemplate.convertAndSend("/topic/admin/notifications", Map.of(
-            "type", "DISCONNECT",
+            "title", "System",
             "message", "User disconnected"
         ));
     }
 }
+

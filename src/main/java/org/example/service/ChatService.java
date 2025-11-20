@@ -25,6 +25,8 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
+    private final org.example.mapper.RoomChatMapper roomChatMapper;
 
     @Transactional
     public ChatRoom getOrCreateChatRoom(Long userId, Long adminId) {
@@ -141,26 +143,107 @@ public class ChatService {
     }
 
     // RoomChat CRUD
+    /**
+     * Tạo phòng chat mới - User tạo yêu cầu chat với Admin
+     * Flow: User tạo room → status = pending, adminId = null → gửi notification cho TẤT CẢ admin
+     */
     @Transactional
     public ChatRoom createRoom(org.example.dto.request.roomChat.CreateRoomRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        User admin = userRepository.findById(request.getAdminId())
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
 
+        // Tạo room với status pending và adminId = null (chưa có admin xác nhận)
         ChatRoom room = new ChatRoom();
         room.setId(UUID.randomUUID().toString());
         room.setUser(user);
-        room.setAdmin(admin);
-        try {
-            room.setType(ChatRoom.RoomType.valueOf(request.getRoomType()));
-        } catch (IllegalArgumentException e) {
+        room.setAdmin(null); // Admin sẽ được assign khi approve
+        
+        // Set room type
+        if (request.getRoomType() != null) {
+            try {
+                room.setType(ChatRoom.RoomType.valueOf(request.getRoomType()));
+            } catch (IllegalArgumentException e) {
+                room.setType(ChatRoom.RoomType.user_admin);
+            }
+        } else {
             room.setType(ChatRoom.RoomType.user_admin);
         }
+        
         room.setAiEnabled(false);
         room.setStatus(ChatRoom.RoomStatus.pending);
-        return chatRoomRepository.save(room);
+        
+        ChatRoom savedRoom = chatRoomRepository.save(room);
+        
+        // Nếu có tin nhắn đầu tiên, lưu luôn vào database
+        if (request.getInitialMessage() != null && !request.getInitialMessage().trim().isEmpty()) {
+            ChatMessage initialMessage = new ChatMessage();
+            initialMessage.setRoom(savedRoom);
+            initialMessage.setSender(user);
+            initialMessage.setSenderType(ChatMessage.SenderType.user);
+            initialMessage.setContent(request.getInitialMessage());
+            initialMessage.setType(ChatMessage.MessageType.text);
+            initialMessage.setStatus(ChatMessage.MessageStatus.sent);
+            chatMessageRepository.save(initialMessage);
+        }
+        
+        // Gửi notification cho TẤT CẢ admin
+        notificationService.notifyAllAdmins(
+            "Yêu cầu chat mới",
+            "User " + user.getFullName() + " muốn chat với bạn. Nhấn để xem và xác nhận.",
+            org.example.entity.Notification.NotificationType.chat_message,
+            savedRoom
+        );
+        
+        return savedRoom;
     }
+
+    /**
+     * Admin xác nhận phòng chat
+     * Flow: Admin approve → assign adminId, chuyển status từ pending → active
+     * @param roomId ID của phòng chat
+     * @param adminId ID của admin đang approve
+     */
+    @Transactional
+    public ChatRoom approveRoom(String roomId, Long adminId) {
+        ChatRoom room = getRoomById(roomId);
+        
+        // Kiểm tra room đang pending
+        if (room.getStatus() != ChatRoom.RoomStatus.pending) {
+            throw new RuntimeException("Room is not in pending status");
+        }
+        
+        // Lấy thông tin admin
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        
+        // Kiểm tra có phải admin không
+        if (!admin.getRole().getName().equalsIgnoreCase("ADMIN")) {
+            throw new RuntimeException("User is not an admin");
+        }
+        
+        // Assign admin và chuyển status sang active
+        room.setAdmin(admin);
+        room.setStatus(ChatRoom.RoomStatus.active);
+        ChatRoom savedRoom = chatRoomRepository.save(room);
+        
+        // Notify User rằng yêu cầu đã được chấp nhận
+        notificationService.createNotificationWithRoom(
+            room.getUser().getId(),
+            "Yêu cầu chat được chấp nhận",
+            "Admin " + admin.getFullName() + " đã chấp nhận yêu cầu chat của bạn.",
+            org.example.entity.Notification.NotificationType.chat_message,
+            savedRoom
+        );
+        
+        // Broadcast room update via WebSocket
+        messagingTemplate.convertAndSend("/topic/chat/room/" + roomId + "/status", roomChatMapper.toResponse(savedRoom));
+        
+        // Notify user specifically
+        messagingTemplate.convertAndSend("/topic/user/" + room.getUser().getId() + "/room-updates", roomChatMapper.toResponse(savedRoom));
+        
+        return savedRoom;
+    }
+
 
     @Transactional(readOnly = true)
     public ChatRoom getRoomById(String id) {
@@ -179,12 +262,78 @@ public class ChatService {
         if (request.getAiEnabled() != null) {
             room.setAiEnabled(request.getAiEnabled());
         }
+        if (request.getStatus() != null) {
+            try {
+                room.setStatus(ChatRoom.RoomStatus.valueOf(request.getStatus()));
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid status or throw exception
+            }
+        }
         return chatRoomRepository.save(room);
+    }
+
+    @Transactional
+    public ChatMessageResponse updateMessageStatus(Long messageId, String status) {
+        ChatMessage message = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Message not found"));
+        
+        try {
+            message.setStatus(ChatMessage.MessageStatus.valueOf(status));
+        } catch (IllegalArgumentException e) {
+             throw new RuntimeException("Invalid status");
+        }
+        
+        ChatMessage updatedMessage = chatMessageRepository.save(message);
+        return mapToResponse(updatedMessage);
     }
 
     @Transactional
     public void deleteRoom(String id) {
         ChatRoom room = getRoomById(id);
         chatRoomRepository.delete(room);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getRoomsByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return chatRoomRepository.findByUser(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getRoomsByAdminId(Long adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        return chatRoomRepository.findByAdmin(admin);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getRoomsByStatus(String status) {
+        try {
+            ChatRoom.RoomStatus roomStatus = ChatRoom.RoomStatus.valueOf(status);
+            return chatRoomRepository.findByStatus(roomStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + status);
+        }
+    }
+    
+    /**
+     * Lấy tất cả pending rooms (dành cho admin để xem các yêu cầu chờ xử lý)
+     */
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getPendingRooms() {
+        return chatRoomRepository.findByStatus(ChatRoom.RoomStatus.pending);
+    }
+
+    @Transactional
+    public ChatRoom closeRoom(String roomId) {
+        ChatRoom room = getRoomById(roomId);
+        room.setStatus(ChatRoom.RoomStatus.closed);
+        ChatRoom savedRoom = chatRoomRepository.save(room);
+        
+        // Notify via WebSocket
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId + "/update", roomChatMapper.toResponse(savedRoom));
+        
+        return savedRoom;
     }
 }

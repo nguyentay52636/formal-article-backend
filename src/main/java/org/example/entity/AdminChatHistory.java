@@ -44,7 +44,7 @@ public class AdminChatHistory {
     private String message;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "sender", nullable = false, length = 10)
+    @Column(name = "sender", nullable = false)
     private SenderType sender;
     
     @CreationTimestamp
