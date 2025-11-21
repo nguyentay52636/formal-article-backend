@@ -194,5 +194,17 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+    /**
+     * Lấy danh sách users theo role ID
+     */
+    public List<UserResponse> getUsersByRoleId(Long roleId) {
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role không tồn tại với ID: " + roleId));
+        
+        List<User> users = userRepository.findByRole(role);
+        return users.stream()
+                .map(userMapper::toUserResponse)
+                .collect(Collectors.toList());
+    }
 }
 

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -290,7 +291,64 @@ public class ChatService {
     @Transactional
     public void deleteRoom(String id) {
         ChatRoom room = getRoomById(id);
+        
+        // Lưu thông tin trước khi xóa để gửi notification
+        User user = room.getUser();
+        User admin = room.getAdmin();
+        String roomStatus = room.getStatus().name();
+        
+        // Xóa room khỏi database
         chatRoomRepository.delete(room);
+        
+        // Gửi WebSocket notification đến user về việc room bị xóa
+        messagingTemplate.convertAndSend("/topic/user/" + user.getId() + "/room-deleted", 
+            Map.of(
+                "roomId", id,
+                "message", "Phòng chat đã bị hủy",
+                "deletedAt", java.time.LocalDateTime.now()
+            )
+        );
+        
+        // Nếu room đã có admin (status active), thông báo cho admin
+        if (admin != null) {
+            messagingTemplate.convertAndSend("/topic/user/" + admin.getId() + "/room-deleted", 
+                Map.of(
+                    "roomId", id,
+                    "message", "User " + user.getFullName() + " đã hủy phòng chat",
+                    "deletedBy", user.getId(),
+                    "deletedAt", java.time.LocalDateTime.now()
+                )
+            );
+            
+            // Tạo notification trong database cho admin
+            notificationService.createNotification(
+                admin.getId(),
+                "Phòng chat bị hủy",
+                "User " + user.getFullName() + " đã hủy phòng chat.",
+                org.example.entity.Notification.NotificationType.chat_message
+            );
+        }
+        
+        // Nếu là pending room, thông báo cho TẤT CẢ admin
+        if (roomStatus.equals("pending")) {
+            messagingTemplate.convertAndSend("/topic/admin/room-deleted", 
+                Map.of(
+                    "roomId", id,
+                    "message", "User " + user.getFullName() + " đã hủy yêu cầu chat",
+                    "deletedBy", user.getId(),
+                    "deletedAt", java.time.LocalDateTime.now()
+                )
+            );
+        }
+        
+        // Broadcast tới topic chung của room (nếu có ai đang kết nối)
+        messagingTemplate.convertAndSend("/topic/chat/room/" + id + "/deleted", 
+            Map.of(
+                "roomId", id,
+                "message", "Phòng chat đã bị xóa",
+                "deletedAt", java.time.LocalDateTime.now()
+            )
+        );
     }
 
     @Transactional(readOnly = true)

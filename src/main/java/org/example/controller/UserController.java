@@ -48,7 +48,15 @@ public class UserController {
         List<UserResponse> users = userService.getAllUsersResponse();
         return ResponseEntity.ok(users);
     }
-    
+    /**
+     * Lấy tất cả users role admin 
+     * GET /api/users/admin
+     */
+    @GetMapping("/admin")
+    public ResponseEntity<List<UserResponse>> getAdminUsers() {
+        List<UserResponse> users = userService.getUsersByRoleId(1L);
+        return ResponseEntity.ok(users);
+    }
     /**
      * Lấy user theo ID
      * GET /api/users/{id}

@@ -57,6 +57,28 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/rooms/{roomId}")
+    @Operation(summary = "Lấy thông tin phòng chat", description = "Lấy chi tiết phòng chat theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Thành công"),
+        @ApiResponse(responseCode = "404", description = "Phòng chat không tồn tại")
+    })
+    public ResponseEntity<ChatRoomResponse> getRoomById(
+            @Parameter(description = "ID của phòng chat", required = true) @PathVariable String roomId) {
+        ChatRoom room = chatService.getRoomById(roomId);
+        ChatRoomResponse response = ChatRoomResponse.builder()
+                .id(room.getId())
+                .type(room.getType().name())
+                .status(room.getStatus().name())
+                .userId(room.getUser().getId())
+                .adminId(room.getAdmin() != null ? room.getAdmin().getId() : null)
+                .aiEnabled(room.getAiEnabled())
+                .createdAt(room.getCreatedAt())
+                .updatedAt(room.getUpdatedAt())
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/rooms/{roomId}/messages")
     @Operation(summary = "Lấy lịch sử chat", description = "Lấy danh sách tin nhắn trong phòng chat")
     @ApiResponse(responseCode = "200", description = "Thành công")
