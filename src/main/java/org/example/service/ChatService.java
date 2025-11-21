@@ -90,9 +90,6 @@ public class ChatService {
         ChatMessage savedMessage = chatMessageRepository.save(message);
         ChatMessageResponse response = mapToResponse(savedMessage);
 
-        // Send to WebSocket topic
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId, response);
-
         return response;
     }
     
@@ -195,6 +192,9 @@ public class ChatService {
             savedRoom
         );
         
+        // Broadcast update
+        broadcastRoomUpdate(savedRoom);
+        
         return savedRoom;
     }
 
@@ -237,7 +237,7 @@ public class ChatService {
         );
         
         // Broadcast room update via WebSocket
-        messagingTemplate.convertAndSend("/topic/chat/room/" + roomId + "/status", roomChatMapper.toResponse(savedRoom));
+        broadcastRoomUpdate(savedRoom);
         
         // Notify user specifically
         messagingTemplate.convertAndSend("/topic/user/" + room.getUser().getId() + "/room-updates", roomChatMapper.toResponse(savedRoom));
@@ -269,8 +269,11 @@ public class ChatService {
             } catch (IllegalArgumentException e) {
                 // Ignore invalid status or throw exception
             }
+            }
         }
-        return chatRoomRepository.save(room);
+        ChatRoom savedRoom = chatRoomRepository.save(room);
+        broadcastRoomUpdate(savedRoom);
+        return savedRoom;
     }
 
     @Transactional
@@ -390,8 +393,13 @@ public class ChatService {
         ChatRoom savedRoom = chatRoomRepository.save(room);
         
         // Notify via WebSocket
-        messagingTemplate.convertAndSend("/topic/chat/" + roomId + "/update", roomChatMapper.toResponse(savedRoom));
+        broadcastRoomUpdate(savedRoom);
         
         return savedRoom;
+    }
+
+    private void broadcastRoomUpdate(ChatRoom room) {
+        // Broadcast to generic room topic
+        messagingTemplate.convertAndSend("/topic/chat/room/" + room.getId(), roomChatMapper.toResponse(room));
     }
 }

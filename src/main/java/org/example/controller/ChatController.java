@@ -27,6 +27,7 @@ import java.util.Map;
 public class ChatController {
 
     private final ChatService chatService;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
 
     @GetMapping("/version")
@@ -97,7 +98,10 @@ public class ChatController {
             @Parameter(description = "ID của phòng chat", required = true) @PathVariable String roomId,
             @Parameter(description = "ID của người gửi", required = true) @RequestParam Long senderId,
             @RequestBody ChatMessageRequest request) {
-        return ResponseEntity.ok(chatService.sendMessage(roomId, senderId, request));
+        ChatMessageResponse response = chatService.sendMessage(roomId, senderId, request);
+        // Broadcast to WebSocket
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId, response);
+        return ResponseEntity.ok(response);
     }
     
     /**
@@ -109,7 +113,10 @@ public class ChatController {
     public ChatMessageResponse sendMessageSocket(
             @DestinationVariable String roomId,
             @Payload ChatMessageRequest request) {
-        return chatService.sendMessage(roomId, request.getSenderId(), request);
+        ChatMessageResponse response = chatService.sendMessage(roomId, request.getSenderId(), request);
+        // Broadcast to WebSocket
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId, response);
+        return response;
     }
     
     /**
