@@ -28,4 +28,6 @@ public class TemplateResponse {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
+    private String html;
+    private String css;
 }
