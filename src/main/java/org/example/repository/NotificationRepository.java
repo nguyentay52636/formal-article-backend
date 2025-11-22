@@ -11,4 +11,5 @@ import java.util.List;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findByReceiverOrderByCreatedAtDesc(User receiver);
     List<Notification> findByReceiverAndIsReadFalseOrderByCreatedAtDesc(User receiver);
+    void deleteByReceiver(User receiver);
 }

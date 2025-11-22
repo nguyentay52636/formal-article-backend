@@ -25,8 +25,7 @@ public class WebSocketEventListener {
         
         // Notify admins
         messagingTemplate.convertAndSend("/topic/admin/notifications", Map.of(
-            "title", "System",
-            "message", "New user connected"
+            "title", "System"
         ));
     }
 
@@ -37,8 +36,7 @@ public class WebSocketEventListener {
         
         // Notify admins
         messagingTemplate.convertAndSend("/topic/admin/notifications", Map.of(
-            "title", "System",
-            "message", "User disconnected"
+            "title", "System"
         ));
     }
 }

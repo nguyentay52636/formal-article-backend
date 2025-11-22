@@ -269,7 +269,6 @@ public class ChatService {
             } catch (IllegalArgumentException e) {
                 // Ignore invalid status or throw exception
             }
-            }
         }
         ChatRoom savedRoom = chatRoomRepository.save(room);
         broadcastRoomUpdate(savedRoom);
