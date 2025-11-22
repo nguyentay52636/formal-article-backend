@@ -27,6 +27,7 @@ import java.util.Map;
 public class ChatController {
 
     private final ChatService chatService;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
 
     @GetMapping("/version")
@@ -44,6 +45,28 @@ public class ChatController {
             @Parameter(description = "ID của User", required = true) @RequestParam Long userId,
             @Parameter(description = "ID của Admin", required = true) @RequestParam Long adminId) {
         ChatRoom room = chatService.getOrCreateChatRoom(userId, adminId);
+        ChatRoomResponse response = ChatRoomResponse.builder()
+                .id(room.getId())
+                .type(room.getType().name())
+                .status(room.getStatus().name())
+                .userId(room.getUser().getId())
+                .adminId(room.getAdmin() != null ? room.getAdmin().getId() : null)
+                .aiEnabled(room.getAiEnabled())
+                .createdAt(room.getCreatedAt())
+                .updatedAt(room.getUpdatedAt())
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/rooms/{roomId}")
+    @Operation(summary = "Lấy thông tin phòng chat", description = "Lấy chi tiết phòng chat theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Thành công"),
+        @ApiResponse(responseCode = "404", description = "Phòng chat không tồn tại")
+    })
+    public ResponseEntity<ChatRoomResponse> getRoomById(
+            @Parameter(description = "ID của phòng chat", required = true) @PathVariable String roomId) {
+        ChatRoom room = chatService.getRoomById(roomId);
         ChatRoomResponse response = ChatRoomResponse.builder()
                 .id(room.getId())
                 .type(room.getType().name())
@@ -75,7 +98,10 @@ public class ChatController {
             @Parameter(description = "ID của phòng chat", required = true) @PathVariable String roomId,
             @Parameter(description = "ID của người gửi", required = true) @RequestParam Long senderId,
             @RequestBody ChatMessageRequest request) {
-        return ResponseEntity.ok(chatService.sendMessage(roomId, senderId, request));
+        ChatMessageResponse response = chatService.sendMessage(roomId, senderId, request);
+        // Broadcast to WebSocket
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId, response);
+        return ResponseEntity.ok(response);
     }
     
     /**
@@ -87,7 +113,10 @@ public class ChatController {
     public ChatMessageResponse sendMessageSocket(
             @DestinationVariable String roomId,
             @Payload ChatMessageRequest request) {
-        return chatService.sendMessage(roomId, request.getSenderId(), request);
+        ChatMessageResponse response = chatService.sendMessage(roomId, request.getSenderId(), request);
+        // Broadcast to WebSocket
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId, response);
+        return response;
     }
     
     /**

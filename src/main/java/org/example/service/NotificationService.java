@@ -123,4 +123,33 @@ public class NotificationService {
             messagingTemplate.convertAndSend("/topic/admin/notifications", notificationMapper.toResponse(savedNotification));
         }
     }
+
+    @Transactional
+    public NotificationResponse deleteNotification(Long id, Long userId) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+
+        if (!notification.getReceiver().getId().equals(userId)) {
+            throw new RuntimeException("You do not have permission to delete this notification");
+        }
+
+        notificationRepository.delete(notification);
+        return notificationMapper.toResponse(notification);
+    }
+    
+
+
+    @Transactional
+    public List<NotificationResponse> deleteAllNotifications(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<Notification> notifications = notificationRepository.findByReceiverOrderByCreatedAtDesc(user);
+        List<NotificationResponse> responses = notifications.stream()
+                .map(notificationMapper::toResponse)
+                .collect(Collectors.toList());
+        
+        notificationRepository.deleteByReceiver(user);
+        return responses;
+    }
 }

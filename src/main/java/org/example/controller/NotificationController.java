@@ -39,4 +39,24 @@ public class NotificationController {
             @Parameter(description = "ID của thông báo", required = true) @PathVariable Long id) {
         return ResponseEntity.ok(notificationService.markAsRead(id));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Xóa thông báo", description = "Xóa một thông báo theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Thành công"),
+        @ApiResponse(responseCode = "404", description = "Thông báo không tồn tại")
+    })
+    public ResponseEntity<NotificationResponse> deleteNotification(
+            @Parameter(description = "ID của thông báo", required = true) @PathVariable Long id,
+            @Parameter(description = "ID của User", required = true) @RequestParam Long userId) {
+        return ResponseEntity.ok(notificationService.deleteNotification(id, userId));
+    }
+
+    @DeleteMapping("/all")
+    @Operation(summary = "Xóa tất cả thông báo", description = "Xóa tất cả thông báo của user")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<NotificationResponse>> deleteAllNotifications(
+            @Parameter(description = "ID của User", required = true) @RequestParam Long userId) {
+        return ResponseEntity.ok(notificationService.deleteAllNotifications(userId));
+    }
 }

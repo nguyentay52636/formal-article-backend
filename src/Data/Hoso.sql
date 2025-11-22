@@ -29,7 +29,7 @@ VALUES
 -- ======================================
 CREATE TABLE user (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    email VARCHAR(150) UNIQUE NOT NULL CHECK (email LIKE '%@gmail.com'),
+    email VARCHAR(150) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(150),
     phone VARCHAR(10) UNIQUE NOT NULL,
