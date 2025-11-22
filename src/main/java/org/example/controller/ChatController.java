@@ -80,6 +80,17 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/rooms/{roomId}/details")
+    @Operation(summary = "Lấy chi tiết phòng chat và tin nhắn", description = "Lấy thông tin phòng chat cùng với danh sách tin nhắn")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Thành công"),
+        @ApiResponse(responseCode = "404", description = "Phòng chat không tồn tại")
+    })
+    public ResponseEntity<org.example.dto.response.chat.ChatRoomDetailResponse> getRoomDetails(
+            @Parameter(description = "ID của phòng chat", required = true) @PathVariable String roomId) {
+        return ResponseEntity.ok(chatService.getRoomDetails(roomId));
+    }
+
     @GetMapping("/rooms/{roomId}/messages")
     @Operation(summary = "Lấy lịch sử chat", description = "Lấy danh sách tin nhắn trong phòng chat")
     @ApiResponse(responseCode = "200", description = "Thành công")

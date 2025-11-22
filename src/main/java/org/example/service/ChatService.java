@@ -257,6 +257,24 @@ public class ChatService {
         return chatRoomRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
+    public org.example.dto.response.chat.ChatRoomDetailResponse getRoomDetails(String roomId) {
+        ChatRoom room = getRoomById(roomId);
+        List<ChatMessageResponse> messages = getChatHistory(roomId);
+        
+        return org.example.dto.response.chat.ChatRoomDetailResponse.builder()
+                .id(room.getId())
+                .type(room.getType().name())
+                .status(room.getStatus().name())
+                .userId(room.getUser().getId())
+                .adminId(room.getAdmin() != null ? room.getAdmin().getId() : null)
+                .aiEnabled(room.getAiEnabled())
+                .createdAt(room.getCreatedAt())
+                .updatedAt(room.getUpdatedAt())
+                .messages(messages)
+                .build();
+    }
+
     @Transactional
     public ChatRoom updateRoom(String id, org.example.dto.request.roomChat.UpdateRoomRequest request) {
         ChatRoom room = getRoomById(id);
