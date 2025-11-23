@@ -14,4 +14,7 @@ public class TagCreateRequest {
     
     @Schema(description = "Slug của tag (URL friendly)", example = "cong-nghe-thong-tin")
     private String slug;
+
+    @Schema(description = "Loại tag (job_field, position, design)", example = "job_field")
+    private String type;
 }

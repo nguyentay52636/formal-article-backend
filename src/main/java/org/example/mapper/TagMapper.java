@@ -15,6 +15,7 @@ public class TagMapper {
         response.setId(tag.getId());
         response.setName(tag.getName());
         response.setSlug(tag.getSlug());
+        response.setType(tag.getType());
         return response;
     }
 
@@ -25,6 +26,7 @@ public class TagMapper {
         Tag tag = new Tag();
         tag.setName(request.getName());
         tag.setSlug(request.getSlug());
+        tag.setType(request.getType());
         return tag;
     }
 
@@ -34,6 +36,7 @@ public class TagMapper {
         }
         tag.setName(request.getName());
         tag.setSlug(request.getSlug());
+        tag.setType(request.getType());
     }
 }
 

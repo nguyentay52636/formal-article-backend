@@ -17,5 +17,8 @@ public class TagResponse {
     
     @Schema(description = "Slug của tag", example = "cong-nghe-thong-tin")
     private String slug;
+
+    @Schema(description = "Loại tag", example = "job_field")
+    private String type;
 }
 
