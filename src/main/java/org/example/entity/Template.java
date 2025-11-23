@@ -67,8 +67,8 @@ public class Template {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    // Relationships - các CV đã tạo từ template này (không cascade vì không có ON DELETE CASCADE)
-    @OneToMany(mappedBy = "template", fetch = FetchType.LAZY)
+    // Relationships - các CV đã tạo từ template này (cascade ALL để xóa template sẽ xóa luôn CV)
+    @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<GeneratedCv> generatedCvs = new ArrayList<>();
     
     // Relationships - các user yêu thích template này (cascade ALL vì ON DELETE CASCADE trong SQL)

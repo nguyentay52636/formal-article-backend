@@ -22,6 +22,7 @@ import java.util.Map;
 @Tag(name = "File Upload", description = "API quản lý file upload")
 @RequiredArgsConstructor
 public class FileUploadController {
+        private static final String UPLOAD_DIR = "uploads/images/";
 
     @Autowired
     private CloudinaryService cloudinaryService;
@@ -43,6 +44,36 @@ public class FileUploadController {
                 errorMessage += " - Cause: " + e.getCause().getMessage();
             }
             return ResponseEntity.badRequest().body(Map.of("error", errorMessage));
+        }
+    }
+    @Operation(summary = "Upload image to local", description = "Upload hình ảnh vào thư mục local")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Upload thành công"),
+            @ApiResponse(responseCode = "500", description = "Lỗi server")
+    })
+    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            java.io.File uploadDir = new java.io.File(UPLOAD_DIR);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            java.nio.file.Path filePath = java.nio.file.Paths.get(UPLOAD_DIR + fileName);
+
+            java.nio.file.Files.write(filePath, file.getBytes());
+
+            String fileUrl = "http://localhost:8000/" + UPLOAD_DIR + fileName;
+
+            return ResponseEntity.ok().body(Map.of(
+                    "message", "Upload thành công",
+                    "fileName", fileName,
+                    "url", fileUrl
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi upload: " + e.getMessage());
         }
     }
 }

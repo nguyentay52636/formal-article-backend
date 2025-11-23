@@ -1,6 +1,12 @@
 package org.example.mapper;
 
+import org.example.dto.request.template.TemplateCreateRequest;
+import org.example.dto.request.template.TemplateUpdateRequest;
+import org.example.dto.response.comment.CommentResponse;
+import org.example.dto.response.rating.RatingResponse;
 import org.example.dto.response.template.TemplateResponse;
+import org.example.entity.Comment;
+import org.example.entity.Rating;
 import org.example.entity.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,6 +17,9 @@ public class TemplateMapper {
     @Autowired
     private TagMapper tagMapper;
 
+    @Autowired
+    private UserMapper userMapper;
+
     public TemplateResponse toTemplateResponse(Template template) {
         if (template == null) {
             return null;
@@ -20,6 +29,8 @@ public class TemplateMapper {
         response.setName(template.getName());
         response.setSlug(template.getSlug());
         response.setSummary(template.getSummary());
+        response.setHtml(template.getHtml());
+        response.setCss(template.getCss());
         response.setPreviewUrl(template.getPreviewUrl());
         response.setViews(template.getViews());
         response.setDownloads(template.getDownloads());
@@ -27,6 +38,64 @@ public class TemplateMapper {
         response.setCreatedAt(template.getCreatedAt());
         response.setUpdatedAt(template.getUpdatedAt());
         return response;
+    }
+
+    public Template toEntity(TemplateCreateRequest request) {
+        if (request == null) {
+            return null;
+        }
+        Template template = new Template();
+        template.setName(request.getName());
+        template.setSlug(request.getSlug());
+        template.setSummary(request.getSummary());
+        template.setHtml(request.getHtml());
+        template.setCss(request.getCss());
+        template.setPreviewUrl(request.getPreviewUrl());
+        return template;
+    }
+
+    public void updateEntity(Template template, TemplateUpdateRequest request) {
+        if (request == null || template == null) {
+            return;
+        }
+        template.setName(request.getName());
+        template.setSlug(request.getSlug());
+        template.setSummary(request.getSummary());
+        template.setHtml(request.getHtml());
+        template.setCss(request.getCss());
+        template.setPreviewUrl(request.getPreviewUrl());
+    }
+
+    public CommentResponse toCommentResponse(Comment comment) {
+        if (comment == null) {
+            return null;
+        }
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .user(userMapper.toUserResponse(comment.getUser()))
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                .replies(comment.getReplies() != null ? 
+                        comment.getReplies().stream()
+                                .map(this::toCommentResponse)
+                                .collect(java.util.stream.Collectors.toList()) 
+                        : new java.util.ArrayList<>())
+                .createdAt(comment.getCreatedAt())
+                .build();
+    }
+
+    public RatingResponse toRatingResponse(Rating rating) {
+        if (rating == null) {
+            return null;
+        }
+        return RatingResponse.builder()
+                .id(rating.getId())
+                .score(rating.getScore())
+                .user(userMapper.toUserResponse(rating.getUser()))
+                .templateId(rating.getTemplate().getId())
+                .templateName(rating.getTemplate().getName())
+                .createdAt(rating.getCreatedAt())
+                .build();
     }
 }
 
