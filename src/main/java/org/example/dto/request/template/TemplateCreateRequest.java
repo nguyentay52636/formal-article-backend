@@ -10,5 +10,6 @@ public class TemplateCreateRequest {
     private String html;
     private String css;
     private String previewUrl;
+    private String color;
     private Long tagId;
 }

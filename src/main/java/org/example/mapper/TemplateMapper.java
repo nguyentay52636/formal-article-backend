@@ -32,6 +32,7 @@ public class TemplateMapper {
         response.setHtml(template.getHtml());
         response.setCss(template.getCss());
         response.setPreviewUrl(template.getPreviewUrl());
+        response.setColor(template.getColor());
         response.setViews(template.getViews());
         response.setDownloads(template.getDownloads());
         response.setTag(tagMapper.toTagResponse(template.getTag()));
@@ -51,6 +52,7 @@ public class TemplateMapper {
         template.setHtml(request.getHtml());
         template.setCss(request.getCss());
         template.setPreviewUrl(request.getPreviewUrl());
+        template.setColor(request.getColor());
         return template;
     }
 
@@ -64,6 +66,7 @@ public class TemplateMapper {
         template.setHtml(request.getHtml());
         template.setCss(request.getCss());
         template.setPreviewUrl(request.getPreviewUrl());
+        template.setColor(request.getColor());
     }
 
     public CommentResponse toCommentResponse(Comment comment) {

@@ -21,6 +21,7 @@ public class TemplateResponse {
     private String html;
     private String css;
     private String previewUrl;
+    private String color;
     private Long views;
     private Long downloads;
     private TagResponse tag;

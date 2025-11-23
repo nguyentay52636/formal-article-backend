@@ -48,6 +48,9 @@ public class Template {
     
     @Column(name = "preview_url", length = 500)
     private String previewUrl;
+
+    @Column(name = "color", length = 50)
+    private String color;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")

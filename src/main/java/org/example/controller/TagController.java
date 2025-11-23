@@ -30,6 +30,15 @@ public class TagController {
         return ResponseEntity.ok(tagService.getAllTags());
     }
 
+    @GetMapping("/type/{type}")
+    @Operation(summary = "Lấy danh sách tag theo type", description = "Lấy các tag theo loại (job_field, position, design)")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<TagResponse>> getTagsByType(
+            @Parameter(description = "Loại tag (job_field, position, design)", required = true) 
+            @PathVariable String type) {
+        return ResponseEntity.ok(tagService.getTagsByType(type));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Lấy chi tiết tag", description = "Lấy thông tin chi tiết của một tag")
     @ApiResponses(value = {

@@ -28,6 +28,13 @@ public class TagService {
     }
 
     @Transactional(readOnly = true)
+    public List<TagResponse> getTagsByType(String type) {
+        return tagRepository.findByType(type).stream()
+                .map(tagMapper::toTagResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public TagResponse getTagById(Long id) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tag not found"));

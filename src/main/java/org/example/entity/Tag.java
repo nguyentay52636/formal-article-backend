@@ -33,6 +33,9 @@ public class Tag {
     
     @Column(name = "name", nullable = false, length = 150)
     private String name;
+
+    @Column(name = "type", nullable = false, length = 50)
+    private String type; // job_field, position, design
     
     // Relationships - các template thuộc tag này
     @OneToMany(mappedBy = "tag", fetch = FetchType.LAZY)
