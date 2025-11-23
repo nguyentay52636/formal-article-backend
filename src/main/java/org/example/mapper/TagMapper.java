@@ -17,5 +17,23 @@ public class TagMapper {
         response.setSlug(tag.getSlug());
         return response;
     }
+
+    public Tag toEntity(org.example.dto.request.tag.TagCreateRequest request) {
+        if (request == null) {
+            return null;
+        }
+        Tag tag = new Tag();
+        tag.setName(request.getName());
+        tag.setSlug(request.getSlug());
+        return tag;
+    }
+
+    public void updateEntity(Tag tag, org.example.dto.request.tag.TagUpdateRequest request) {
+        if (tag == null || request == null) {
+            return;
+        }
+        tag.setName(request.getName());
+        tag.setSlug(request.getSlug());
+    }
 }
 

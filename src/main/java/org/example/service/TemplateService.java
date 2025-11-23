@@ -35,6 +35,7 @@ public class TemplateService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final RatingRepository ratingRepository;
+    private final org.example.repository.GeneratedCvRepository generatedCvRepository;
 
     @Transactional(readOnly = true)
     public List<TemplateResponse> getAllTemplates() {

@@ -1,71 +1,74 @@
 package org.example.controller;
 
-import org.example.entity.Tag;
-import org.example.repository.TagRepository;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.stereotype.Controller;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.example.dto.request.tag.TagCreateRequest;
+import org.example.dto.request.tag.TagUpdateRequest;
+import org.example.dto.response.tag.TagResponse;
+import org.example.service.TagService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
+@RequestMapping("/api/tags")
+@Tag(name = "Tag", description = "API quản lý danh mục CV (Tag)")
+@RequiredArgsConstructor
 public class TagController {
 
-    private final TagRepository tagRepository;
+    private final TagService tagService;
 
-    public TagController(TagRepository tagRepository) {
-        this.tagRepository = tagRepository;
+    @GetMapping
+    @Operation(summary = "Lấy danh sách tag", description = "Lấy tất cả các tag (danh mục CV)")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<TagResponse>> getAllTags() {
+        return ResponseEntity.ok(tagService.getAllTags());
     }
 
-    @QueryMapping
-    public List<Tag> tags() {
-        return tagRepository.findAll();
+    @GetMapping("/{id}")
+    @Operation(summary = "Lấy chi tiết tag", description = "Lấy thông tin chi tiết của một tag")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Thành công"),
+            @ApiResponse(responseCode = "404", description = "Tag không tồn tại")
+    })
+    public ResponseEntity<TagResponse> getTagById(
+            @Parameter(description = "ID của tag", required = true) @PathVariable Long id) {
+        return ResponseEntity.ok(tagService.getTagById(id));
     }
 
-    @QueryMapping
-    public Tag tag(@Argument Long id) {
-        return tagRepository.findById(id).orElse(null);
+    @PostMapping
+    @Operation(summary = "Tạo tag mới", description = "Tạo một tag mới")
+    @ApiResponse(responseCode = "200", description = "Tạo thành công")
+    public ResponseEntity<TagResponse> createTag(@RequestBody TagCreateRequest request) {
+        return ResponseEntity.ok(tagService.createTag(request));
     }
 
-    @QueryMapping
-    public Tag tagBySlug(@Argument String slug) {
-        return tagRepository.findBySlug(slug).orElse(null);
+    @PutMapping("/{id}")
+    @Operation(summary = "Cập nhật tag", description = "Cập nhật thông tin tag")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công"),
+            @ApiResponse(responseCode = "404", description = "Tag không tồn tại")
+    })
+    public ResponseEntity<TagResponse> updateTag(
+            @Parameter(description = "ID của tag", required = true) @PathVariable Long id,
+            @RequestBody TagUpdateRequest request) {
+        return ResponseEntity.ok(tagService.updateTag(id, request));
     }
 
-    @MutationMapping
-    public Tag createTag(@Argument TagInput input) {
-        if (tagRepository.existsBySlug(input.slug())) {
-            throw new IllegalArgumentException("Slug đã tồn tại: " + input.slug());
-        }
-        Tag tag = new Tag();
-        tag.setSlug(input.slug());
-        tag.setName(input.name());
-        return tagRepository.save(tag);
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Xóa tag", description = "Xóa một tag")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Xóa thành công"),
+            @ApiResponse(responseCode = "404", description = "Tag không tồn tại")
+    })
+    public ResponseEntity<Void> deleteTag(
+            @Parameter(description = "ID của tag", required = true) @PathVariable Long id) {
+        tagService.deleteTag(id);
+        return ResponseEntity.ok().build();
     }
-
-    @MutationMapping
-    public Tag updateTag(@Argument Long id, @Argument TagInput input) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tag với id " + id));
-
-        if (!tag.getSlug().equals(input.slug()) && tagRepository.existsBySlug(input.slug())) {
-            throw new IllegalArgumentException("Slug đã tồn tại: " + input.slug());
-        }
-
-        tag.setSlug(input.slug());
-        tag.setName(input.name());
-        return tagRepository.save(tag);
-    }
-
-    @MutationMapping
-    public Boolean deleteTag(@Argument Long id) {
-        if (!tagRepository.existsById(id)) {
-            return false;
-        }
-        tagRepository.deleteById(id);
-        return true;
-    }
-
-    public record TagInput(String slug, String name) { }
 }

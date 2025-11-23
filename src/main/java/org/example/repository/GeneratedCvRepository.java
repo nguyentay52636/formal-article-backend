@@ -13,6 +13,10 @@ public interface GeneratedCvRepository extends JpaRepository<GeneratedCv, Long> 
     List<GeneratedCv> findByUserId(Long userId);
     
     // Tìm tất cả CV của một template
+    // Tìm tất cả CV của một template
     List<GeneratedCv> findByTemplateId(Long templateId);
+
+    // Kiểm tra template có đang được sử dụng không
+    boolean existsByTemplateId(Long templateId);
 }
 

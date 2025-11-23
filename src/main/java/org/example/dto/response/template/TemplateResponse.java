@@ -18,6 +18,8 @@ public class TemplateResponse {
     private String name;
     private String slug;
     private String summary;
+    private String html;
+    private String css;
     private String previewUrl;
     private Long views;
     private Long downloads;
@@ -28,6 +30,5 @@ public class TemplateResponse {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
-    private String html;
-    private String css;
+
 }
