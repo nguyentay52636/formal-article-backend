@@ -23,5 +23,15 @@ public interface TemplateRepository extends JpaRepository<Template, Long> {
     List<Template> findByNameContainingIgnoreCase(String keyword);
 
     // Có thể kết hợp tên và tag
+    // Có thể kết hợp tên và tag
     List<Template> findByNameContainingIgnoreCaseAndTagId(String keyword, Long tagId);
+
+    // Tìm theo language
+    List<Template> findByLanguage(String language);
+
+    // Tìm theo design
+    List<Template> findByDesign(String design);
+
+    // Tìm theo usage
+    List<Template> findByUsage(String usage);
 }

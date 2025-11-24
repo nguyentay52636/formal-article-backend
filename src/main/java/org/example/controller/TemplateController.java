@@ -27,11 +27,21 @@ public class TemplateController {
 
     private final TemplateService templateService;
 
-    @GetMapping
-    @Operation(summary = "Lấy danh sách template", description = "Lấy tất cả template")
+    @GetMapping("/all")
+    @Operation(summary = "Lấy tất cả template", description = "Lấy danh sách tất cả template không phân trang, không lọc")
     @ApiResponse(responseCode = "200", description = "Thành công")
-    public ResponseEntity<List<TemplateResponse>> getAllTemplates() {
+    public ResponseEntity<List<TemplateResponse>> getAllTemplatesList() {
         return ResponseEntity.ok(templateService.getAllTemplates());
+    }
+
+    @GetMapping
+    @Operation(summary = "Lọc danh sách template", description = "Lấy danh sách template có thể lọc theo language, design, usage")
+    @ApiResponse(responseCode = "200", description = "Thành công")
+    public ResponseEntity<List<TemplateResponse>> filterTemplates(
+            @Parameter(description = "Lọc theo ngôn ngữ") @RequestParam(required = false) String language,
+            @Parameter(description = "Lọc theo thiết kế") @RequestParam(required = false) String design,
+            @Parameter(description = "Lọc theo lĩnh vực sử dụng") @RequestParam(required = false) String usage) {
+        return ResponseEntity.ok(templateService.filterTemplates(language, design, usage));
     }
 
     @GetMapping("/{id}")

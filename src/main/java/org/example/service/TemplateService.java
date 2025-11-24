@@ -45,6 +45,23 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
+    public List<TemplateResponse> filterTemplates(String language, String design, String usage) {
+        List<Template> templates;
+        if (language != null && !language.isEmpty()) {
+            templates = templateRepository.findByLanguage(language);
+        } else if (design != null && !design.isEmpty()) {
+            templates = templateRepository.findByDesign(design);
+        } else if (usage != null && !usage.isEmpty()) {
+            templates = templateRepository.findByUsage(usage);
+        } else {
+            templates = templateRepository.findAll();
+        }
+        return templates.stream()
+                .map(templateMapper::toTemplateResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public TemplateResponse getTemplateById(Long id) {
         Template template = templateRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Template not found"));

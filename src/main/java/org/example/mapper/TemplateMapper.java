@@ -33,6 +33,11 @@ public class TemplateMapper {
         response.setCss(template.getCss());
         response.setPreviewUrl(template.getPreviewUrl());
         response.setColor(template.getColor());
+        response.setDescription(template.getDescription());
+        response.setLanguage(template.getLanguage());
+        response.setUsage(template.getUsage());
+        response.setDesign(template.getDesign());
+        response.setFeatures(template.getFeatures());
         response.setViews(template.getViews());
         response.setDownloads(template.getDownloads());
         response.setTag(tagMapper.toTagResponse(template.getTag()));
@@ -53,6 +58,11 @@ public class TemplateMapper {
         template.setCss(request.getCss());
         template.setPreviewUrl(request.getPreviewUrl());
         template.setColor(request.getColor());
+        template.setDescription(request.getDescription());
+        template.setLanguage(request.getLanguage());
+        template.setUsage(request.getUsage());
+        template.setDesign(request.getDesign());
+        template.setFeatures(request.getFeatures());
         return template;
     }
 
@@ -67,6 +77,11 @@ public class TemplateMapper {
         template.setCss(request.getCss());
         template.setPreviewUrl(request.getPreviewUrl());
         template.setColor(request.getColor());
+        template.setDescription(request.getDescription());
+        template.setLanguage(request.getLanguage());
+        template.setUsage(request.getUsage());
+        template.setDesign(request.getDesign());
+        template.setFeatures(request.getFeatures());
     }
 
     public CommentResponse toCommentResponse(Comment comment) {
