@@ -102,18 +102,6 @@ public class TemplateMapper {
                 .build();
     }
 
-    public RatingResponse toRatingResponse(Rating rating) {
-        if (rating == null) {
-            return null;
-        }
-        return RatingResponse.builder()
-                .id(rating.getId())
-                .score(rating.getScore())
-                .user(userMapper.toUserResponse(rating.getUser()))
-                .templateId(rating.getTemplate().getId())
-                .templateName(rating.getTemplate().getName())
-                .createdAt(rating.getCreatedAt())
-                .build();
-    }
+
 }
 

@@ -13,6 +13,7 @@ import org.example.entity.Rating;
 import org.example.entity.Tag;
 import org.example.entity.Template;
 import org.example.entity.User;
+import org.example.mapper.RatingMapper;
 import org.example.mapper.TemplateMapper;
 import org.example.repository.CommentRepository;
 import org.example.repository.RatingRepository;
@@ -32,6 +33,7 @@ public class TemplateService {
     private final TemplateRepository templateRepository;
     private final TagRepository tagRepository;
     private final TemplateMapper templateMapper;
+    private final RatingMapper ratingMapper;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final RatingRepository ratingRepository;
@@ -161,6 +163,6 @@ public class TemplateService {
         rating.setUser(user);
 
         rating = ratingRepository.save(rating);
-        return templateMapper.toRatingResponse(rating);
+        return ratingMapper.toRatingResponse(rating);
     }
 }
