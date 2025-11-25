@@ -37,6 +37,10 @@ public class RobustChatService {
     }
 
     public String askAI(String prompt) {
+        return askAIWithModel(prompt).getContent();
+    }
+    
+    public ResponseWithModel askAIWithModel(String prompt) {
         for (String model : models) {
             try {
                 System.out.println("Đang thử model: " + model);
@@ -82,7 +86,7 @@ public class RobustChatService {
                     
                     if (output != null && !output.isEmpty() && !output.trim().isEmpty()) {
                         System.out.println("Thành công với model: " + model);
-                        return output;
+                        return new ResponseWithModel(output, model);
                     }
                 }
 
@@ -95,10 +99,28 @@ public class RobustChatService {
                     Thread.sleep(DELAY_BETWEEN_RETRIES_MS);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    return "Hiện tại hệ thống AI đang bận, vui lòng thử lại sau.";
+                    return new ResponseWithModel("Hiện tại hệ thống AI đang bận, vui lòng thử lại sau.", null);
                 }
             }
         }
-        return "Hiện tại hệ thống AI đang bận, vui lòng thử lại sau.";
+        return new ResponseWithModel("Hiện tại hệ thống AI đang bận, vui lòng thử lại sau.", null);
+    }
+    
+    public static class ResponseWithModel {
+        private final String content;
+        private final String model;
+        
+        public ResponseWithModel(String content, String model) {
+            this.content = content;
+            this.model = model;
+        }
+        
+        public String getContent() {
+            return content;
+        }
+        
+        public String getModel() {
+            return model;
+        }
     }
 }
