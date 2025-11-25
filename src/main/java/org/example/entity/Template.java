@@ -51,6 +51,26 @@ public class Template {
 
     @Column(name = "color", length = 50)
     private String color;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "language", length = 100)
+    private String language;
+
+    @Column(name = "usage_field", length = 200)
+    private String usage;
+
+    @Column(name = "design", length = 150)
+    private String design;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "template_features",
+            joinColumns = @JoinColumn(name = "template_id")
+    )
+    @Column(name = "feature")
+    private List<String> features = new ArrayList<>();
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")

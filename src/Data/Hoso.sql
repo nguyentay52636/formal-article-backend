@@ -80,10 +80,21 @@ CREATE TABLE template (
     tag_id BIGINT,
     views BIGINT NOT NULL DEFAULT 0,
     color VARCHAR(500),
+    description TEXT,
+    language VARCHAR(100),
+    usage VARCHAR(200),
+    design VARCHAR(150),
     downloads BIGINT NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (tag_id) REFERENCES tag(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE template_features (
+    template_id BIGINT NOT NULL,
+    feature VARCHAR(255) DEFAULT NULL,
+    FOREIGN KEY (template_id) REFERENCES template(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO template (name, slug, summary, html, css, preview_url, tag_id, views, downloads, created_at)
