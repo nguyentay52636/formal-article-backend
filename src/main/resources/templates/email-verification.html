@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực email đăng ký</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 20px;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            margin-bottom: 30px;
+        }
+
+        .verify-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .verify-button:hover {
+            background-color: #2980b9;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .info {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .link-fallback {
+            word-break: break-all;
+            color: #3498db;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📚 MẫuCV.vn</div>
+            <div class="title">✉️ Xác thực email đăng ký</div>
+        </div>
+
+        <div class="content">
+            <p>Xin chào <strong th:text="${fullName}">Người dùng</strong>,</p>
+
+            <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>MẫuCV.vn</strong>!</p>
+
+            <p>Để hoàn tất quá trình đăng ký và kích hoạt tài khoản, vui lòng xác thực email của bạn bằng cách nhấp vào nút bên dưới:</p>
+
+            <div class="button-container">
+                <a th:href="${verificationUrl}" class="verify-button">Xác thực email ngay</a>
+            </div>
+
+            <div class="info">
+                <strong>💡 Lưu ý:</strong>
+                <ul>
+                    <li>Link xác thực có hiệu lực trong <strong>24 giờ</strong></li>
+                    <li>Nếu nút không hoạt động, bạn có thể copy link bên dưới và dán vào trình duyệt</li>
+                </ul>
+            </div>
+
+            <div class="link-fallback">
+                <strong>Link xác thực:</strong><br>
+                <span th:text="${verificationUrl}"></span>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Lưu ý quan trọng:</strong>
+                <ul>
+                    <li>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này</li>
+                    <li>Không chia sẻ link xác thực này với bất kỳ ai</li>
+                    <li>Sau khi xác thực, bạn có thể đăng nhập và sử dụng tất cả tính năng của hệ thống</li>
+                </ul>
+            </div>
+
+            <p>Nếu bạn gặp khó khăn hoặc có thắc mắc, vui lòng liên hệ với chúng tôi qua email hỗ trợ.</p>
+        </div>
+
+        <div class="footer">
+            <p>Email này được gửi tự động từ hệ thống MẫuCV.vn</p>
+            <p>Vui lòng không trả lời email này</p>
+            <p>© 2024 MẫuCV.vn. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+
+</html>
+

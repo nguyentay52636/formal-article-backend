@@ -42,6 +42,13 @@ Diagram: https://dbdiagram.io/d/article-68464fa35a9a94714e77be67
 - 🌐 **API công khai:** truy xuất dữ liệu bài viết thông qua REST API.  
 - 🧩 **Swagger UI:** thử nghiệm trực tiếp các endpoint trong trình duyệt.  
 
+## 📧 Đăng ký qua email (Gmail SMTP)
+
+- Ứng dụng sử dụng `spring-boot-starter-mail` + Gmail SMTP để gửi email chào mừng khi người dùng đăng ký.
+- Tạo **App Password** cho Gmail (Google Account → Security → App passwords) và gán vào biến môi trường `MAIL_PASSWORD`.
+- Mặc định email gửi đi lấy từ `spring.mail.username` trong `application.properties` (ví dụ `phuongtay52636@gmail.com`).
+- Có thể thay đổi đường dẫn đăng nhập trong email bằng cách chỉnh `app.url` (mặc định `http://localhost:8080`).
+
 ---
 
 ## ⚡ Cấu trúc dự án
