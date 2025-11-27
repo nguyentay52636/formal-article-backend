@@ -20,17 +20,22 @@ public class RobustChatService {
     
     private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
     
+    // Sắp xếp lại models: ưu tiên các model nhanh và free trước
+    // Các model nhỏ hơn thường nhanh hơn và đủ tốt cho chat
     private final List<String> models = List.of(
-        "x-ai/grok-4.1-fast:free",
-        "deepseek/deepseek-chat-v3-0324:free",
-        "openai/gpt-5.1",
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "meta-llama/llama-3.2-3b-instruct:free",
-        "google/gemini-flash-1.5-8b:free",
-        "qwen/qwen-2.5-7b-instruct:free"
+        // Fast và free models - ưu tiên cao nhất
+        "google/gemini-flash-1.5-8b:free",           // Rất nhanh
+        "qwen/qwen-2.5-7b-instruct:free",            // Nhanh và tốt
+        "meta-llama/llama-3.2-3b-instruct:free",     // Rất nhanh
+        "deepseek/deepseek-chat-v3-0324:free",       // Nhanh
+        "x-ai/grok-4.1-fast:free",                   // Nhanh
+        // Models lớn hơn - dự phòng
+        "meta-llama/llama-3.3-70b-instruct:free",    // Chậm hơn nhưng tốt hơn
+        "openai/gpt-5.1"                             // Premium - dự phòng cuối cùng
     );
 
-    private static final int DELAY_BETWEEN_RETRIES_MS = 500;
+    // Giảm delay để retry nhanh hơn
+    private static final int DELAY_BETWEEN_RETRIES_MS = 300;
 
     public RobustChatService() {
         this.restTemplate = new RestTemplate();
@@ -43,15 +48,14 @@ public class RobustChatService {
     public ResponseWithModel askAIWithModel(String prompt) {
         for (String model : models) {
             try {
-                System.out.println("Đang thử model: " + model);
-                
                 long startTime = System.currentTimeMillis();
                 
-                // Tạo request body
+                // Tạo request body với temperature thấp hơn để response nhanh và nhất quán hơn
                 List<OpenRouterRequest.Message> messages = new ArrayList<>();
                 messages.add(new OpenRouterRequest.Message("user", prompt));
                 
-                OpenRouterRequest request = new OpenRouterRequest(model, messages, 0.7);
+                // Giảm temperature từ 0.7 xuống 0.5 để response nhanh hơn và ngắn gọn hơn
+                OpenRouterRequest request = new OpenRouterRequest(model, messages, 0.5);
                 
                 // Tạo headers
                 HttpHeaders headers = new HttpHeaders();
@@ -71,28 +75,35 @@ public class RobustChatService {
                 long endTime = System.currentTimeMillis();
                 long duration = endTime - startTime;
                 
-                System.out.println("Model " + model + " hoàn thành sau " + duration + "ms");
+                // Chỉ log khi debug (có thể tắt trong production)
+                if (duration > 2000) { // Chỉ log các request chậm
+                    System.out.println("Model " + model + " hoàn thành sau " + duration + "ms");
+                }
 
                 if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                     OpenRouterResponse responseBody = response.getBody();
                     
                     // Kiểm tra lỗi từ API
                     if (responseBody.getError() != null) {
-                        System.out.println("API trả về lỗi: " + responseBody.getError().getMessage());
+                        // Chỉ log lỗi nghiêm trọng
+                        if (!responseBody.getError().getMessage().contains("rate limit")) {
+                            System.err.println("API error: " + responseBody.getError().getMessage());
+                        }
                         continue;
                     }
                     
                     String output = responseBody.getContent();
                     
                     if (output != null && !output.isEmpty() && !output.trim().isEmpty()) {
-                        System.out.println("Thành công với model: " + model);
                         return new ResponseWithModel(output, model);
                     }
                 }
 
             } catch (Exception e) {
-                System.out.println("Model " + model + " thất bại: " + e.getMessage());
-                e.printStackTrace();
+                // Chỉ log exception nghiêm trọng, không print stack trace đầy đủ để tăng tốc
+                if (!e.getMessage().contains("timeout") && !e.getMessage().contains("rate limit")) {
+                    System.err.println("Model " + model + " failed: " + e.getMessage());
+                }
                 
                 // Đợi một chút trước khi thử model tiếp theo
                 try {

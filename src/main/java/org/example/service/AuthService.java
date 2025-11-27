@@ -45,10 +45,6 @@ public class AuthService {
         if (Boolean.FALSE.equals(user.getActive())) {
             throw new IllegalStateException("Tài khoản đã bị khóa, vui lòng liên hệ quản trị viên");
         }
-        
-        if (Boolean.FALSE.equals(user.getEmailVerified())) {
-            throw new IllegalStateException("Email chưa được xác thực. Vui lòng kiểm tra email và xác thực tài khoản trước khi đăng nhập.");
-        }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Email hoặc mật khẩu không chính xác");
