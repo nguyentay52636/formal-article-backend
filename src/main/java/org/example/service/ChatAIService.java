@@ -36,36 +36,17 @@ public class ChatAIService {
     
     // Keywords liên quan đến CV và xin việc - sử dụng Set để tìm kiếm nhanh hơn
     private static final Set<String> CV_KEYWORDS = new HashSet<>(Set.of(
-        // CV và Resume
         "cv", "resume", "sơ yếu lý lịch", "đơn xin việc", "hồ sơ xin việc", "mẫu cv", "template cv", 
-        "tạo cv", "viết cv", "làm cv", "thiết kế cv", "format cv", "cấu trúc cv",
-        
-        // Tìm việc và xin việc
-        "xin việc", "tuyển dụng", "ứng tuyển", "tìm việc", "tìm việc làm", "việc làm", 
-        "tuyển nhân viên", "job", "career", "employment", "job search", "tìm công việc",
-        
-        // Phỏng vấn
-        "phỏng vấn", "interview", "phỏng vấn xin việc", "chuẩn bị phỏng vấn",
-        
-        // Nội dung CV
+        "tạo cv", "viết cv", "làm cv", "xin việc", "tuyển dụng", "ứng tuyển", "phỏng vấn", 
         "kinh nghiệm làm việc", "kỹ năng", "học vấn", "bằng cấp", "mục tiêu nghề nghiệp", 
-        "giới thiệu bản thân", "mô tả bản thân", "thông tin cá nhân", "liên hệ",
-        "thư xin việc", "cover letter", "portfolio", "profile",
-        
-        // Công việc và nghề nghiệp
-        "mô tả công việc", "job description", "nghề nghiệp", "nghề", "công việc",
-        "nhân viên", "chuyên viên", "manager", "director", "executive", 
-        "intern", "thực tập", "ứng viên", "candidate",
-        
-        // Các ngành nghề cụ thể
-        "phá chế", "bartender", "barista", "nhà hàng", "khách sạn", "lễ tân", 
-        "bảo vệ", "tài xế", "kỹ sư", "developer", "lập trình", "designer", 
-        "marketing", "sales", "kế toán", "nhân sự", "giáo viên", "bác sĩ", 
-        "y tá", "dược sĩ", "luật sư", "kiến trúc sư", "kỹ thuật viên",
-        
-        // Từ khóa tiếng Anh
-        "work experience", "education", "skills", "qualification", "certificate",
-        "reference", "achievement", "objective", "summary"
+        "thư xin việc", "cover letter", "portfolio", "profile", "giới thiệu bản thân",
+        "mô tả công việc", "job description", "nghề nghiệp", "việc làm", "tìm việc", 
+        "tuyển nhân viên", "nhân viên", "chuyên viên", "manager", "director", "executive", 
+        "intern", "thực tập", "phá chế", "bartender", "barista", "nhà hàng", "khách sạn", 
+        "lễ tân", "bảo vệ", "tài xế", "kỹ sư", "developer", "lập trình", "designer", 
+        "marketing", "sales", "kế toán", "nhân sự", "giáo viên", "bác sĩ", "y tá", 
+        "dược sĩ", "luật sư", "kiến trúc sư", "kỹ thuật viên", "công việc", "nghề",
+        "ứng viên", "candidate", "job", "career", "employment"
     ));
     
     // Keywords cho intent tạo CV
@@ -86,24 +67,24 @@ public class ChatAIService {
     
     /**
      * Phân loại intent của người dùng bằng AI - giống ChatGPT
-     * AI tự hiểu ngữ cảnh và phân loại chính xác
+     * AI tự hiểu ngữ cảnh và phân loại chính xác - linh động tối đa
+     * Chỉ giữ fast path cho greeting rõ ràng để tối ưu tốc độ
      */
     private UserIntent classifyIntent(String prompt) {
         if (prompt == null || prompt.trim().isEmpty()) {
             return UserIntent.GENERAL_GREETING;
         }
         
-        // Fast check: nếu có keyword rõ ràng thì không cần gọi AI
         String lowerPrompt = prompt.toLowerCase().trim();
         
-        // Kiểm tra greeting patterns
-        if (lowerPrompt.matches("^(hi|hello|chào|xin chào|hey|good morning|good afternoon|good evening).*") ||
-            lowerPrompt.matches(".*(giúp tôi|tôi cần hỗ trợ|help|assist|hỗ trợ).*") ||
-            lowerPrompt.length() < 10) {
-            // Có thể là greeting, nhưng để AI quyết định chính xác
+        // Fast path: Chỉ greeting rõ ràng - để AI tự quyết định các trường hợp khác
+        if (lowerPrompt.matches("^(hi|hello|chào|xin chào|hey|good morning|good afternoon|good evening)$") ||
+            lowerPrompt.matches("^(hi|hello|chào|xin chào|hey|good morning|good afternoon|good evening)\\s*!?$") ||
+            lowerPrompt.length() < 5) {
+            return UserIntent.GENERAL_GREETING;
         }
         
-        // Gọi AI để phân loại intent - prompt ngắn gọn để nhanh
+        // Gọi AI để phân loại intent - để AI tự quyết định linh động
         String classificationPrompt = String.format(
             "Phân loại câu sau thành 1 trong 4 loại: CREATE_CV, CV_RELATED, GENERAL_GREETING, OFF_TOPIC\n" +
             "CREATE_CV: người dùng muốn tạo/làm/viết CV mới\n" +
@@ -174,19 +155,27 @@ public class ChatAIService {
         return UserIntent.OFF_TOPIC;
     }
     
-   
+    /**
+     * Kiểm tra xem prompt có liên quan đến CV và xin việc không (backward compatibility)
+     */
+    private boolean isCVRelated(String prompt) {
+        UserIntent intent = classifyIntent(prompt);
+        return intent == UserIntent.CV_RELATED || intent == UserIntent.CREATE_CV;
+    }
+    
+    /**
+     * Tạo thông báo từ chối khi prompt không liên quan đến CV
+     */
     private String getRejectionMessage() {
         return """
             Xin lỗi, tôi chỉ hỗ trợ các câu hỏi liên quan đến CV (Sơ yếu lý lịch) và tìm việc làm.
             
             Tôi có thể giúp bạn:
-            ✅ Tìm mẫu CV phù hợp với ngành nghề của bạn
-            ✅ Tạo CV chuyên nghiệp
-            ✅ Hướng dẫn viết CV hiệu quả
-            ✅ Gợi ý cách trình bày thông tin trong CV
-            ✅ Tư vấn về các phần quan trọng trong CV (thông tin cá nhân, kinh nghiệm, kỹ năng, học vấn)
-            ✅ Hướng dẫn về thư xin việc (cover letter)
-            ✅ Tư vấn về quy trình xin việc và phỏng vấn
+            - Tạo mẫu CV cho các ngành nghề khác nhau
+            - Hướng dẫn viết CV chuyên nghiệp
+            - Gợi ý cách trình bày thông tin trong CV
+            - Tư vấn về các phần quan trọng trong CV
+            - Tìm mẫu CV phù hợp với ngành nghề của bạn
             
             Vui lòng đặt câu hỏi về CV hoặc tìm việc để tôi có thể hỗ trợ bạn tốt nhất.
             """;
@@ -225,15 +214,8 @@ public class ChatAIService {
         }
     }
 
-    /**
-     * Chat với AI về CV và xin việc - Trợ lý ảo hoàn chỉnh
-     * AI tự động hiểu intent giống ChatGPT - linh động và thông minh
-     */
     public ChatResponse chatWithIntent(String prompt) {
-        // Phân loại intent bằng AI
         UserIntent intent = classifyIntent(prompt);
-        
-        // Xử lý theo từng loại intent
         switch (intent) {
             case CREATE_CV:
                 return handleCreateCVIntent(prompt);
@@ -252,8 +234,27 @@ public class ChatAIService {
     
     /**
      * Xử lý khi người dùng muốn tạo CV
+     * Nếu prompt chưa đủ thông tin (chỉ "tạo cv"), AI sẽ hỏi lại về chuyên ngành
+     * Chỉ tạo CV khi có đủ thông tin
      */
     private ChatResponse handleCreateCVIntent(String prompt) {
+        // Kiểm tra xem prompt có đủ thông tin để tạo CV không
+        if (!hasEnoughInfoForCV(prompt)) {
+            // Prompt chưa đủ thông tin - hỏi lại bằng AI
+            String clarificationPrompt = String.format(
+                "Người dùng muốn tạo CV nhưng chỉ nói: \"%s\"\n" +
+                "Bạn là trợ lý AI thân thiện. Hãy hỏi lại người dùng về:\n" +
+                "- Chuyên ngành/nghề nghiệp họ muốn tạo CV (ví dụ: developer, designer, kế toán...)\n" +
+                "- Hoặc thông tin cơ bản về họ để tạo CV\n" +
+                "Hãy trả lời tự nhiên, thân thiện như một người bạn.",
+                prompt
+            );
+            
+            String aiResponse = robustChatService.askAI(clarificationPrompt);
+            return ChatResponse.textOnly(aiResponse, null);
+        }
+        
+        // Prompt có đủ thông tin - tạo CV
         try {
             GeneratedCvPreviewResponse cvPreview = generatedCvService.generateCVPreview(prompt);
             
@@ -294,6 +295,56 @@ public class ChatAIService {
     }
     
     /**
+     * Kiểm tra xem prompt có đủ thông tin để tạo CV không
+     * Nếu chỉ là "tạo cv", "làm cv" → chưa đủ thông tin
+     * Nếu có thông tin về nghề nghiệp/chuyên ngành → đủ thông tin
+     */
+    private boolean hasEnoughInfoForCV(String prompt) {
+        if (prompt == null || prompt.trim().isEmpty()) {
+            return false;
+        }
+        
+        String lowerPrompt = prompt.toLowerCase().trim();
+        
+        // Nếu chỉ là các từ đơn giản về tạo CV → chưa đủ thông tin
+        if (lowerPrompt.matches("^(tạo cv|tạo resume|tạo sơ yếu|làm cv|viết cv|create cv|make cv|generate cv)$") ||
+            lowerPrompt.matches("^(tạo cv|tạo resume|tạo sơ yếu|làm cv|viết cv|create cv|make cv|generate cv)\\s*!?$")) {
+            return false;
+        }
+        
+        // Kiểm tra xem có thông tin về nghề nghiệp/chuyên ngành không
+        // Sử dụng AI để kiểm tra xem có đủ thông tin không
+        String checkPrompt = String.format(
+            "Kiểm tra xem câu sau có đủ thông tin để tạo CV không (có nghề nghiệp, chuyên ngành, hoặc mô tả về người dùng).\n" +
+            "Câu: \"%s\"\n" +
+            "Chỉ trả về YES nếu đủ thông tin, NO nếu chưa đủ.",
+            prompt
+        );
+        
+        try {
+            String aiResponse = robustChatService.askAI(checkPrompt).trim().toUpperCase();
+            return aiResponse.contains("YES") || aiResponse.contains("ĐỦ") || aiResponse.contains("CÓ");
+        } catch (Exception e) {
+            // Fallback: kiểm tra keyword
+            // Nếu có từ khóa về nghề nghiệp → có thể đủ thông tin
+            String[] professionKeywords = {
+                "developer", "designer", "kế toán", "nhân viên", "manager", "engineer",
+                "teacher", "bác sĩ", "y tá", "luật sư", "marketing", "sales",
+                "tôi là", "tôi làm", "chuyên ngành", "nghề nghiệp", "công việc"
+            };
+            
+            for (String keyword : professionKeywords) {
+                if (lowerPrompt.contains(keyword)) {
+                    return true;
+                }
+            }
+            
+            // Nếu prompt dài hơn 20 ký tự và không chỉ là "tạo cv" → có thể đủ thông tin
+            return prompt.length() > 20;
+        }
+    }
+    
+    /**
      * Xử lý khi người dùng hỏi về CV (tư vấn, hướng dẫn)
      */
     private ChatResponse handleCVRelatedIntent(String prompt) {
@@ -325,15 +376,6 @@ public class ChatAIService {
     }
     
     /**
-     * Chat với AI về CV và xin việc (backward compatibility)
-     * Chỉ trả lời các câu hỏi liên quan đến CV, tìm CV, tạo CV
-     */
-    public String chat(String prompt) {
-        ChatResponse response = chatWithIntent(prompt);
-        return response.getResponse() != null ? response.getResponse() : "";
-    }
-    
-    /**
      * Tạo prompt tối ưu cho AI - ngắn gọn và tự nhiên như ChatGPT
      */
     private String buildOptimizedPrompt(String userPrompt) {
@@ -344,6 +386,15 @@ public class ChatAIService {
             "Người dùng: %s",
             userPrompt
         );
+    }
+    
+    /**
+     * Chat với AI về CV và xin việc (backward compatibility)
+     * Chỉ trả lời các câu hỏi liên quan đến CV, tìm CV, tạo CV
+     */
+    public String chat(String prompt) {
+        ChatResponse response = chatWithIntent(prompt);
+        return response.getResponse() != null ? response.getResponse() : "";
     }
     
     /**
