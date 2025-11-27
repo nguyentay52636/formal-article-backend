@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký thành công</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 20px;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            margin-bottom: 30px;
+        }
+
+        .primary-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .primary-button:hover {
+            background-color: #2980b9;
+        }
+
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📚 Hệ thống quản lý bài viết</div>
+            <div class="title">Chào mừng bạn đến với cộng đồng của chúng tôi!</div>
+        </div>
+
+        <div class="content">
+            <p>Xin chào <strong th:text="${fullName}">bạn</strong>,</p>
+
+            <p>Bạn đã đăng ký tài khoản thành công bằng email
+                <strong th:text="${email}">user@example.com</strong>. Từ bây giờ bạn có thể đăng nhập và sử dụng
+                toàn bộ tính năng của hệ thống.</p>
+
+            <a class="primary-button" th:href="${appUrl}">Đăng nhập ngay</a>
+
+            <div class="info-box">
+                <p><strong>Mẹo nhỏ:</strong></p>
+                <ul>
+                    <li>Cập nhật hồ sơ cá nhân để hệ thống gợi ý nội dung chính xác hơn</li>
+                    <li>Bật thông báo email để không bỏ lỡ các hoạt động quan trọng</li>
+                    <li>Liên hệ đội ngũ hỗ trợ khi bạn gặp bất kỳ khó khăn nào</li>
+                </ul>
+            </div>
+
+            <p>Nếu đây không phải là bạn, hãy bỏ qua email này hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+        </div>
+
+        <div class="footer">
+            <p>Email được gửi tự động từ hệ thống quản lý bài viết</p>
+            <p>Vui lòng không trả lời email này</p>
+            <p>© 2024 Hệ thống quản lý bài viết. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </div>
+</body>
+
+</html>
+

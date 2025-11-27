@@ -54,6 +54,22 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    /**
+     * Tạo token xác thực email với thời hạn 24 giờ
+     */
+    public String generateEmailVerificationToken(String email) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 86400000L); // 24 giờ
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("type", "email_verification")
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)

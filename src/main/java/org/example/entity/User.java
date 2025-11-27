@@ -49,6 +49,13 @@ public class User {
     @Column(name = "active", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
     private Boolean active = true;
     
+    @Column(name = "email_verified", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
+    private Boolean emailVerified = false;
+    
+    @Column(name = "email_verification_token", length = 500)
+    @JsonIgnore
+    private String emailVerificationToken;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
