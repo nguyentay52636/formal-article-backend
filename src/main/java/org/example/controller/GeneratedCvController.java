@@ -12,12 +12,18 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.request.generatedCv.GeneratedCvCreateRequest;
 import org.example.dto.response.generatedCv.GeneratedCvResponse;
 import org.example.service.GeneratedCvManagementService;
-import org.springframework.data.domain.Page;
+import org.example.service.JasperCvService;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,11 +37,14 @@ import java.util.Map;
 public class GeneratedCvController {
 
     private final GeneratedCvManagementService generatedCvManagementService;
+    private final JasperCvService jasperCvService;
 
     // ==================== CREATE ====================
 
     @Operation(summary = "Tạo CV mới", 
-               description = "Tạo CV từ template và dữ liệu user cung cấp")
+               description = "Tạo CV từ template. Hỗ trợ 2 mode:\n" +
+                       "1. AI Mode: Truyền prompt → AI tự generate dataJson, styleJson, htmlOutput\n" +
+                       "2. Manual Mode: Truyền dataJson, styleJson, htmlOutput trực tiếp")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Tạo CV thành công",
                      content = @Content(schema = @Schema(implementation = GeneratedCvResponse.class))),
@@ -45,39 +54,56 @@ public class GeneratedCvController {
     @PostMapping
     public ResponseEntity<?> createCV(@Valid @RequestBody GeneratedCvCreateRequest request) {
         GeneratedCvResponse response = generatedCvManagementService.createCV(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", "success");
+        result.put("message", "Tạo CV thành công");
+        result.put("data", response);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     // ==================== READ ====================
 
+    @Operation(summary = "Lấy tất cả CV", 
+               description = "Lấy danh sách tất cả CV trong hệ thống")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Thành công")
+    })
+    @GetMapping
+    public ResponseEntity<?> getAllCVs() {
+        List<GeneratedCvResponse> cvList = generatedCvManagementService.getAllCVs();
+        
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", "success");
+        response.put("data", cvList);
+        response.put("total", cvList.size());
+        
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(summary = "Lấy danh sách CV của user", 
-               description = "Lấy danh sách CV đã tạo của user với phân trang")
+               description = "Lấy tất cả CV đã tạo của user")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Thành công")
     })
     @GetMapping("/my-cvs")
     public ResponseEntity<?> getMyCVs(
             @Parameter(description = "ID của user") 
-            @RequestParam Long userId,
-            @Parameter(description = "Số trang (bắt đầu từ 0)") 
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Số lượng mỗi trang") 
-            @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Từ khóa tìm kiếm theo title") 
-            @RequestParam(required = false) String keyword) {
+            @RequestParam Long userId) {
         
-        Page<GeneratedCvResponse> cvPage = generatedCvManagementService.getCVsByUserId(userId, page, size, keyword);
+        List<GeneratedCvResponse> cvList = generatedCvManagementService.getAllCVsByUserId(userId);
         
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "success");
-        response.put("data", cvPage.getContent());
-        response.put("pagination", buildPaginationInfo(cvPage));
+        response.put("data", cvList);
+        response.put("total", cvList.size());
         
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Lấy chi tiết CV", 
-               description = "Lấy thông tin chi tiết CV bao gồm HTML và các dữ liệu")
+               description = "Lấy thông tin chi tiết CV bao gồm HTML, JSON data và PDF URL")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Thành công",
                      content = @Content(schema = @Schema(implementation = GeneratedCvResponse.class))),
@@ -96,10 +122,84 @@ public class GeneratedCvController {
         return ResponseEntity.ok(result);
     }
 
+    // ==================== PDF OPERATIONS ====================
+
+    @Operation(summary = "Preview PDF", 
+               description = "Render PDF tạm để preview, trả về byte[] - không lưu file")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "PDF rendered thành công"),
+        @ApiResponse(responseCode = "404", description = "CV không tồn tại"),
+        @ApiResponse(responseCode = "500", description = "Lỗi khi render PDF")
+    })
+    @GetMapping(value = "/{id}/preview-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> previewPdf(
+            @Parameter(description = "ID của CV") 
+            @PathVariable Long id) {
+        byte[] pdfBytes = jasperCvService.previewPdf(id);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("inline", "cv_preview_" + id + ".pdf");
+        headers.setContentLength(pdfBytes.length);
+        
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Lưu PDF", 
+               description = "Render PDF thật và lưu vào storage. Cập nhật pdfUrl trong CV")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lưu PDF thành công"),
+        @ApiResponse(responseCode = "404", description = "CV không tồn tại"),
+        @ApiResponse(responseCode = "500", description = "Lỗi khi lưu PDF")
+    })
+    @PostMapping("/{id}/save-pdf")
+    public ResponseEntity<?> savePdf(
+            @Parameter(description = "ID của CV") 
+            @PathVariable Long id) {
+        String pdfUrl = jasperCvService.savePdf(id);
+        
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", "success");
+        response.put("message", "Lưu PDF thành công");
+        response.put("pdfUrl", pdfUrl);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Download PDF", 
+               description = "Download PDF đã lưu. Nếu chưa có PDF, trả về lỗi 404")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Download thành công"),
+        @ApiResponse(responseCode = "404", description = "CV hoặc PDF không tồn tại")
+    })
+    @GetMapping(value = "/{id}/download-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<Resource> downloadPdf(
+            @Parameter(description = "ID của CV") 
+            @PathVariable Long id) {
+        String pdfPath = jasperCvService.getPdfPath(id);
+        
+        if (pdfPath == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        File file = new File(pdfPath);
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Resource resource = new FileSystemResource(file);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "cv_" + id + ".pdf");
+        
+        return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+    }
+
     // ==================== UPDATE ====================
 
     @Operation(summary = "Cập nhật CV", 
-               description = "Cập nhật thông tin CV đã tồn tại")
+               description = "Cập nhật thông tin CV. Nếu có prompt mới sẽ regenerate content từ AI")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Cập nhật thành công"),
         @ApiResponse(responseCode = "404", description = "CV không tồn tại")
@@ -122,7 +222,7 @@ public class GeneratedCvController {
     // ==================== DELETE ====================
 
     @Operation(summary = "Xóa CV", 
-               description = "Xóa CV đã tạo")
+               description = "Xóa CV đã tạo (bao gồm cả file PDF nếu có)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Xóa thành công"),
         @ApiResponse(responseCode = "404", description = "CV không tồn tại")
@@ -131,6 +231,10 @@ public class GeneratedCvController {
     public ResponseEntity<?> deleteCV(
             @Parameter(description = "ID của CV") 
             @PathVariable Long id) {
+        // Xóa PDF trước
+        jasperCvService.deletePdf(id);
+        
+        // Xóa CV
         generatedCvManagementService.deleteCV(id);
         
         Map<String, Object> response = new LinkedHashMap<>();
@@ -140,16 +244,4 @@ public class GeneratedCvController {
         return ResponseEntity.ok(response);
     }
 
-    // ==================== HELPER ====================
-
-    private Map<String, Object> buildPaginationInfo(Page<?> page) {
-        Map<String, Object> pagination = new LinkedHashMap<>();
-        pagination.put("currentPage", page.getNumber());
-        pagination.put("totalPages", page.getTotalPages());
-        pagination.put("totalElements", page.getTotalElements());
-        pagination.put("size", page.getSize());
-        pagination.put("hasNext", page.hasNext());
-        pagination.put("hasPrevious", page.hasPrevious());
-        return pagination;
-    }
 }

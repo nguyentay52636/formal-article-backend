@@ -1,7 +1,7 @@
 package org.example.mapper;
 
-import org.example.dto.request.ai.GenerateCvRequest;
 import org.example.dto.response.generatedCv.GeneratedCvResponse;
+import org.example.dto.response.template.TemplateSimpleResponse;
 import org.example.entity.GeneratedCv;
 import org.example.entity.Template;
 import org.example.entity.User;
@@ -17,9 +17,6 @@ public class GeneratedCvMapper {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private TemplateMapper templateMapper;
-
     /**
      * Chuyển đổi GeneratedCv entity sang GeneratedCvResponse
      *
@@ -33,7 +30,7 @@ public class GeneratedCvMapper {
         GeneratedCvResponse response = new GeneratedCvResponse();
         response.setId(entity.getId());
         response.setUser(userMapper.toUserResponse(entity.getUser()));
-        response.setTemplate(templateMapper.toTemplateResponse(entity.getTemplate()));
+        response.setTemplate(toTemplateSimpleResponse(entity.getTemplate()));
         response.setTitle(entity.getTitle());
         response.setDataJson(entity.getDataJson());
         response.setStyleJson(entity.getStyleJson());
@@ -42,6 +39,32 @@ public class GeneratedCvMapper {
         response.setCreatedAt(entity.getCreatedAt());
         response.setUpdatedAt(entity.getUpdatedAt());
         return response;
+    }
+    
+    /**
+     * Chuyển đổi Template entity sang TemplateSimpleResponse
+     * Không load features và tag để tránh lazy loading
+     */
+    private TemplateSimpleResponse toTemplateSimpleResponse(Template template) {
+        if (template == null) {
+            return null;
+        }
+        return TemplateSimpleResponse.builder()
+                .id(template.getId())
+                .name(template.getName())
+                .slug(template.getSlug())
+                .summary(template.getSummary())
+                .previewUrl(template.getPreviewUrl())
+                .color(template.getColor())
+                .description(template.getDescription())
+                .language(template.getLanguage())
+                .usage(template.getUsage())
+                .design(template.getDesign())
+                .views(template.getViews())
+                .downloads(template.getDownloads())
+                .createdAt(template.getCreatedAt())
+                .updatedAt(template.getUpdatedAt())
+                .build();
     }
 
     /**

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.dto.response.template.TemplateResponse;
+import org.example.dto.response.template.TemplateSimpleResponse;
 import org.example.dto.response.user.UserResponse;
 
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ public class GeneratedCvResponse {
     
     private UserResponse user;
     
-    private TemplateResponse template;
+    private TemplateSimpleResponse template;
     
     /**
      * Tiêu đề CV

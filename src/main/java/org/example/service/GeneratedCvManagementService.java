@@ -14,11 +14,9 @@ import org.example.repository.TemplateRepository;
 import org.example.repository.UserRepository;
 import org.example.util.AICvResponseParser;
 import org.example.util.AICvResponseParser.ParsedCvResult;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -39,46 +37,77 @@ public class GeneratedCvManagementService {
     // ==================== CREATE ====================
 
     /**
-     * Tạo CV mới từ template + AI prompt
-     * Flow: 
-     * 1. Lấy Template (html, css, style)
-     * 2. Gọi AI để generate dataJson từ prompt
-     * 3. Kết hợp template + dataJson để tạo htmlOutput
-     * 4. Lưu GeneratedCv
+     * Tạo CV mới - hỗ trợ 2 mode:
+     * 1. AI Mode: prompt → AI generate dataJson, styleJson, htmlOutput
+     * 2. Manual Mode: user tự nhập dataJson, styleJson, htmlOutput
      */
     @Transactional
     public GeneratedCvResponse createCV(GeneratedCvCreateRequest request) {
-        // 1. Validate entities
+        // 1. Validate request
+        if (!request.isValid()) {
+            throw new IllegalArgumentException("Request phải có prompt (AI mode) hoặc dataJson (Manual mode)");
+        }
+        
+        // 2. Validate entities
         User user = findUserById(request.getUserId());
         Template template = findTemplateById(request.getTemplateId());
         
-        // 2. Gọi AI để generate CV data từ prompt
+        // 3. Tạo entity
+        GeneratedCv entity = new GeneratedCv();
+        entity.setUser(user);
+        entity.setTemplate(template);
+        
+        if (request.isAiMode()) {
+            // AI Mode: Gọi AI để generate CV data
+            createCvWithAI(entity, request, template);
+        } else {
+            // Manual Mode: Lấy data từ request
+            createCvManual(entity, request);
+        }
+        
+        // 4. Lưu và trả về
+        GeneratedCv savedEntity = generatedCvRepository.save(entity);
+        log.info("Created CV [{}] with ID: {} for user: {} using template: {}", 
+                request.isAiMode() ? "AI" : "Manual",
+                savedEntity.getId(), user.getId(), template.getId());
+        
+        return generatedCvMapper.toResponse(savedEntity);
+    }
+    
+    /**
+     * Tạo CV với AI mode
+     */
+    private void createCvWithAI(GeneratedCv entity, GeneratedCvCreateRequest request, Template template) {
         ParsedCvResult aiResult = generateCVDataFromAI(request.getPrompt(), template);
         
         if (aiResult == null || !aiResult.isValid()) {
             throw new GeneratedCvService.CvGenerationException("Lỗi khi tạo CV từ AI. Vui lòng thử lại.");
         }
         
-        // 3. Xác định title (ưu tiên user input)
+        // Xác định title (ưu tiên user input)
         String title = (request.getTitle() != null && !request.getTitle().isBlank()) 
                 ? request.getTitle() 
                 : aiResult.title();
         
-        // 4. Tạo entity
-        GeneratedCv entity = new GeneratedCv();
-        entity.setUser(user);
-        entity.setTemplate(template);
         entity.setTitle(title);
         entity.setDataJson(aiResult.dataJson());
         entity.setStyleJson(aiResult.styleJson());
         entity.setHtmlOutput(aiResult.htmlOutput());
+    }
+    
+    /**
+     * Tạo CV với Manual mode
+     */
+    private void createCvManual(GeneratedCv entity, GeneratedCvCreateRequest request) {
+        // Title: ưu tiên user input, nếu không có thì dùng default
+        String title = (request.getTitle() != null && !request.getTitle().isBlank()) 
+                ? request.getTitle() 
+                : "CV - " + System.currentTimeMillis();
         
-        // 5. Lưu và trả về
-        GeneratedCv savedEntity = generatedCvRepository.save(entity);
-        log.info("Created CV with ID: {} for user: {} using template: {}", 
-                savedEntity.getId(), user.getId(), template.getId());
-        
-        return generatedCvMapper.toResponse(savedEntity);
+        entity.setTitle(title);
+        entity.setDataJson(request.getDataJson());
+        entity.setStyleJson(request.getStyleJson() != null ? request.getStyleJson() : "{}");
+        entity.setHtmlOutput(request.getHtmlOutput() != null ? request.getHtmlOutput() : "");
     }
 
     // ==================== READ ====================
@@ -86,69 +115,116 @@ public class GeneratedCvManagementService {
     /**
      * Lấy CV theo ID
      */
+    @Transactional(readOnly = true)
     public GeneratedCvResponse getCVById(Long id) {
         GeneratedCv entity = findCvById(id);
         return generatedCvMapper.toResponse(entity);
     }
 
     /**
-     * Lấy danh sách CV của user (có phân trang và tìm kiếm)
+     * Lấy tất cả CV (không phân trang)
      */
-    public Page<GeneratedCvResponse> getCVsByUserId(Long userId, int page, int size, String keyword) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        
-        Page<GeneratedCv> cvPage;
-        if (keyword != null && !keyword.isBlank()) {
-            cvPage = generatedCvRepository.searchByUserIdAndTitle(userId, keyword.trim(), pageable);
-        } else {
-            cvPage = generatedCvRepository.findByUserId(userId, pageable);
-        }
-        
-        return cvPage.map(generatedCvMapper::toResponse);
+    @Transactional(readOnly = true)
+    public List<GeneratedCvResponse> getAllCVs() {
+        List<GeneratedCv> cvList = generatedCvRepository.findAllWithUserAndTemplate();
+        return cvList.stream()
+                .map(generatedCvMapper::toResponse)
+                .toList();
+    }
+
+    /**
+     * Lấy tất cả CV của user (không phân trang)
+     */
+    @Transactional(readOnly = true)
+    public List<GeneratedCvResponse> getAllCVsByUserId(Long userId) {
+        List<GeneratedCv> cvList = generatedCvRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        return cvList.stream()
+                .map(generatedCvMapper::toResponse)
+                .toList();
     }
 
     // ==================== UPDATE ====================
 
     /**
-     * Cập nhật CV - có thể regenerate từ prompt mới
+     * Cập nhật CV - hỗ trợ 2 mode:
+     * 1. AI Mode: có prompt mới → regenerate từ AI
+     * 2. Manual Mode: có dataJson → cập nhật trực tiếp
+     * 3. Chỉ update title nếu không có cả 2
      */
     @Transactional
     public GeneratedCvResponse updateCV(Long id, GeneratedCvCreateRequest request) {
         GeneratedCv entity = findCvById(id);
         Template template = entity.getTemplate();
         
-        // Nếu có prompt mới, regenerate content
-        if (request.getPrompt() != null && !request.getPrompt().isBlank()) {
-            // Nếu đổi template
-            if (request.getTemplateId() != null && !request.getTemplateId().equals(template.getId())) {
-                template = findTemplateById(request.getTemplateId());
-                entity.setTemplate(template);
-            }
-            
-            ParsedCvResult aiResult = generateCVDataFromAI(request.getPrompt(), template);
-            if (aiResult != null && aiResult.isValid()) {
-                entity.setDataJson(aiResult.dataJson());
-                entity.setStyleJson(aiResult.styleJson());
-                entity.setHtmlOutput(aiResult.htmlOutput());
-                
-                // Update title nếu có
-                if (request.getTitle() != null && !request.getTitle().isBlank()) {
-                    entity.setTitle(request.getTitle());
-                } else {
-                    entity.setTitle(aiResult.title());
-                }
-            }
+        // Nếu đổi template
+        if (request.getTemplateId() != null && !request.getTemplateId().equals(template.getId())) {
+            template = findTemplateById(request.getTemplateId());
+            entity.setTemplate(template);
+        }
+        
+        if (request.isAiMode()) {
+            // AI Mode: Regenerate từ AI
+            updateCvWithAI(entity, request, template);
+        } else if (request.isManualMode()) {
+            // Manual Mode: Cập nhật data trực tiếp
+            updateCvManual(entity, request);
         } else {
-            // Chỉ update title nếu không có prompt mới
+            // Chỉ update title
             if (request.getTitle() != null && !request.getTitle().isBlank()) {
                 entity.setTitle(request.getTitle());
             }
         }
         
         GeneratedCv savedEntity = generatedCvRepository.save(entity);
-        log.info("Updated CV with ID: {}", id);
+        log.info("Updated CV [{}] with ID: {}", 
+                request.isAiMode() ? "AI" : (request.isManualMode() ? "Manual" : "Title only"), id);
         
         return generatedCvMapper.toResponse(savedEntity);
+    }
+    
+    /**
+     * Cập nhật CV với AI mode
+     */
+    private void updateCvWithAI(GeneratedCv entity, GeneratedCvCreateRequest request, Template template) {
+        ParsedCvResult aiResult = generateCVDataFromAI(request.getPrompt(), template);
+        
+        if (aiResult != null && aiResult.isValid()) {
+            entity.setDataJson(aiResult.dataJson());
+            entity.setStyleJson(aiResult.styleJson());
+            entity.setHtmlOutput(aiResult.htmlOutput());
+            
+            // Update title
+            if (request.getTitle() != null && !request.getTitle().isBlank()) {
+                entity.setTitle(request.getTitle());
+            } else {
+                entity.setTitle(aiResult.title());
+            }
+        }
+    }
+    
+    /**
+     * Cập nhật CV với Manual mode
+     */
+    private void updateCvManual(GeneratedCv entity, GeneratedCvCreateRequest request) {
+        // Update title nếu có
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            entity.setTitle(request.getTitle());
+        }
+        
+        // Update dataJson
+        if (request.getDataJson() != null) {
+            entity.setDataJson(request.getDataJson());
+        }
+        
+        // Update styleJson
+        if (request.getStyleJson() != null) {
+            entity.setStyleJson(request.getStyleJson());
+        }
+        
+        // Update htmlOutput
+        if (request.getHtmlOutput() != null) {
+            entity.setHtmlOutput(request.getHtmlOutput());
+        }
     }
 
     // ==================== DELETE ====================

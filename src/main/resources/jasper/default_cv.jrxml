@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="default_cv"
+              pageWidth="595"
+              pageHeight="842"
+              columnWidth="515"
+              leftMargin="40"
+              rightMargin="40"
+              topMargin="40"
+              bottomMargin="40">
+    
+    <!-- Parameters -->
+    <parameter name="title" class="java.lang.String"/>
+    <parameter name="templateName" class="java.lang.String"/>
+    
+    <!-- Personal Info -->
+    <parameter name="personalInfo" class="java.util.Map"/>
+    
+    <!-- Summary -->
+    <parameter name="summary" class="java.lang.String"/>
+    
+    <!-- Style -->
+    <parameter name="style" class="java.util.Map"/>
+    
+    <!-- Title Band -->
+    <title>
+        <band height="80">
+            <!-- CV Title -->
+            <textField>
+                <reportElement x="0" y="0" width="515" height="40" forecolor="#2C3E50"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="24" isBold="true" fontName="SansSerif"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{title} != null ? $P{title} : "CURRICULUM VITAE"]]></textFieldExpression>
+            </textField>
+            
+            <!-- Separator Line -->
+            <line>
+                <reportElement x="0" y="50" width="515" height="1" forecolor="#3498DB"/>
+            </line>
+        </band>
+    </title>
+    
+    <!-- Detail Band -->
+    <detail>
+        <band height="600">
+            <!-- Personal Info Section -->
+            <staticText>
+                <reportElement x="0" y="10" width="515" height="25" forecolor="#2C3E50"/>
+                <textElement>
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <text><![CDATA[THÔNG TIN CÁ NHÂN]]></text>
+            </staticText>
+            
+            <line>
+                <reportElement x="0" y="35" width="200" height="1" forecolor="#3498DB"/>
+            </line>
+            
+            <!-- Name -->
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="45" width="515" height="20"/>
+                <textElement>
+                    <font size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{personalInfo} != null && $P{personalInfo}.get("fullName") != null ? 
+                    "Họ tên: " + $P{personalInfo}.get("fullName") : ""]]></textFieldExpression>
+            </textField>
+            
+            <!-- Email -->
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="65" width="515" height="20"/>
+                <textElement>
+                    <font size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{personalInfo} != null && $P{personalInfo}.get("email") != null ? 
+                    "Email: " + $P{personalInfo}.get("email") : ""]]></textFieldExpression>
+            </textField>
+            
+            <!-- Phone -->
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="85" width="515" height="20"/>
+                <textElement>
+                    <font size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{personalInfo} != null && $P{personalInfo}.get("phone") != null ? 
+                    "Điện thoại: " + $P{personalInfo}.get("phone") : ""]]></textFieldExpression>
+            </textField>
+            
+            <!-- Address -->
+            <textField isBlankWhenNull="true">
+                <reportElement x="0" y="105" width="515" height="20"/>
+                <textElement>
+                    <font size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{personalInfo} != null && $P{personalInfo}.get("address") != null ? 
+                    "Địa chỉ: " + $P{personalInfo}.get("address") : ""]]></textFieldExpression>
+            </textField>
+            
+            <!-- Summary Section -->
+            <staticText>
+                <reportElement x="0" y="140" width="515" height="25" forecolor="#2C3E50"/>
+                <textElement>
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <text><![CDATA[MỤC TIÊU NGHỀ NGHIỆP]]></text>
+            </staticText>
+            
+            <line>
+                <reportElement x="0" y="165" width="200" height="1" forecolor="#3498DB"/>
+            </line>
+            
+            <textField isBlankWhenNull="true" isStretchWithOverflow="true">
+                <reportElement x="0" y="175" width="515" height="60"/>
+                <textElement>
+                    <font size="11"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{summary} != null ? $P{summary} : ""]]></textFieldExpression>
+            </textField>
+            
+            <!-- Footer Note -->
+            <staticText>
+                <reportElement x="0" y="550" width="515" height="20" forecolor="#95A5A6"/>
+                <textElement textAlignment="Center">
+                    <font size="8" isItalic="true"/>
+                </textElement>
+                <text><![CDATA[CV được tạo bởi hệ thống CV Builder]]></text>
+            </staticText>
+        </band>
+    </detail>
+    
+    <!-- Page Footer -->
+    <pageFooter>
+        <band height="30">
+            <textField>
+                <reportElement x="0" y="10" width="515" height="15" forecolor="#95A5A6"/>
+                <textElement textAlignment="Center">
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>
