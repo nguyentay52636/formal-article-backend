@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.dto.request.ai.AiChatRequest;
 import org.example.dto.request.ai.GenerateCvRequest;
+import org.example.dto.response.AI.ChatResponse;
 import org.example.dto.response.generatedCv.GeneratedCvPreviewResponse;
 import org.example.dto.response.generatedCv.GeneratedCvResponse;
 import org.example.service.ChatAIService;
@@ -46,9 +47,22 @@ public class ChatAIController {
         return ResponseEntity.ok(chatAIService.findTemplates(query));
     }
 
-    @Operation(summary = "Chat với AI", description = "Trò chuyện tự do với AI về CV và xin việc")
+    @Operation(summary = "Chat với AI về CV - Trợ lý ảo hoàn chỉnh", 
+               description = "Trò chuyện với AI chatbot chuyên về CV và tìm việc. " +
+                           "Bot tự động phát hiện intent: nếu bạn muốn tạo CV, bot sẽ tạo CV và trả về preview. " +
+                           "Nếu bạn chỉ hỏi về CV, bot sẽ trả lời câu hỏi. " +
+                           "Bot chỉ trả lời các câu hỏi liên quan đến: tìm CV, tạo CV, viết CV, " +
+                           "tư vấn CV, phỏng vấn xin việc. Các câu hỏi không liên quan sẽ bị từ chối.")
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, String>> chat(@RequestBody AiChatRequest request) {
+    public ResponseEntity<ChatResponse> chat(@RequestBody AiChatRequest request) {
+        ChatResponse response = chatAIService.chatWithIntent(request.getPrompt());
+        return ResponseEntity.ok(response);
+    }
+    
+    @Operation(summary = "Chat với AI về CV (backward compatibility)", 
+               description = "API cũ - chỉ trả về text response. Khuyến nghị sử dụng /chat mới.")
+    @PostMapping("/chat/text")
+    public ResponseEntity<Map<String, String>> chatTextOnly(@RequestBody AiChatRequest request) {
         String response = chatAIService.chat(request.getPrompt());
         return ResponseEntity.ok(Map.of("response", response));
     }
