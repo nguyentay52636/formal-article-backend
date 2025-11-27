@@ -21,3 +21,12 @@ USER                                    ADMIN
   │ ◄────────────────────────────────────┤
   │              [WebSocket]              │
   ├─ Receive message (real-time)         │
+
+
+  Plan AI :
+  Method	Endpoint	Request
+POST	/api/generated-cvs	{userId, templateId, prompt, title?}
+GET	/api/generated-cvs/my-cvs?userId=1&page=0&size=10	Query params
+GET	/api/generated-cvs/{id}	Path param
+PUT	/api/generated-cvs/{id}	{prompt?, title?} (regenerate với prompt mới)
+DELETE	/api/generated-cvs/{id}	Path param

@@ -15,10 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entity cho bảng user
- * Lưu trữ thông tin người dùng
- */
+
 @Entity
 @Table(name = "user")
 @Data
@@ -66,22 +63,18 @@ public class User {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
     
-    // Relationships - các CV đã tạo (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<GeneratedCv> generatedCvs = new ArrayList<>();
     
-    // Relationships - các template yêu thích (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<FavouriteCv> favouriteCvs = new ArrayList<>();
     
-    // Relationships - các comment của user (không cascade vì không có ON DELETE CASCADE)
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Comment> comments = new ArrayList<>();
     
-    // Relationships - các rating của user (không cascade vì không có ON DELETE CASCADE)
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Rating> ratings = new ArrayList<>();
@@ -91,37 +84,30 @@ public class User {
     @JsonIgnore
     private List<HistoryLog> historyLogs = new ArrayList<>();
     
-    // Relationships - các AI chat history của user (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<AiChatHistory> aiChatHistories = new ArrayList<>();
     
-    // Relationships - các admin chat history với user này (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<AdminChatHistory> adminChatHistoriesAsUser = new ArrayList<>();
     
-    // Relationships - các admin chat history với admin này (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<AdminChatHistory> adminChatHistoriesAsAdmin = new ArrayList<>();
     
-    // Relationships - các chat room mà user này là chủ (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ChatRoom> chatRoomsAsUser = new ArrayList<>();
     
-    // Relationships - các chat room mà user này là admin (ON DELETE SET NULL trong SQL, không cascade)
     @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ChatRoom> chatRoomsAsAdmin = new ArrayList<>();
     
-    // Relationships - các chat message mà user này gửi (ON DELETE SET NULL trong SQL, không cascade)
     @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ChatMessage> chatMessages = new ArrayList<>();
     
-    // Relationships - các notification mà user này nhận (cascade ALL vì ON DELETE CASCADE trong SQL)
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Notification> notifications = new ArrayList<>();
